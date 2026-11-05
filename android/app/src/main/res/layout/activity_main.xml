@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFDF9">
+
+    <!-- Webview hosting Desi AI Calculator (index.html) -->
+    <WebView
+        android:id="@+id/calculatorWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/adViewContainer" />
+
+    <!-- Container for fixed Banner Ad at bottom above privacy footer -->
+    <LinearLayout
+        android:id="@+id/adViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/privacyFooter"
+        android:gravity="center"
+        android:background="#FFF7ED">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-4132634485810878/6060771539" />
+    </LinearLayout>
+
+    <!-- Privacy Policy Footer at the very bottom -->
+    <TextView
+        android:id="@+id/privacyFooter"
+        android:layout_width="match_parent"
+        android:layout_height="28dp"
+        android:layout_alignParentBottom="true"
+        android:background="#FFFDF9"
+        android:gravity="center"
+        android:textColor="#6B7280"
+        android:textSize="12sp"
+        android:text="Privacy Policy - We don't collect any data, all calculations offline" />
+
+</RelativeLayout>

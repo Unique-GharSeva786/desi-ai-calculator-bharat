@@ -1,0 +1,2523 @@
+<!doctype html>
+<html lang="hi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>Desi AI Calculator — देसी हिसाब-किताब कैलकुलेटर</title>
+    <meta
+      name="description"
+      content="Offline Hindi and English voice-enabled Desi calculator with GST, Discount, Age Calculator, Bigha to SqFt converter, Loan EMI, scientific functions, and persistent history."
+    />
+    <meta property="og:title" content="Desi AI Calculator — देसी हिसाब-किताब कैलकुलेटर" />
+    <meta
+      property="og:description"
+      content="Offline Hindi and English voice-enabled Desi calculator with GST, Discount, Age Calculator, Bigha to SqFt converter, Loan EMI, scientific functions, and persistent history."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="admob-app-id" content="ca-app-pub-4132634485810878~7856856901" />
+    <meta name="admob-banner-id" content="ca-app-pub-4132634485810878/6060771539" />
+    <meta name="google-adsense-account" content="ca-app-pub-4132634485810878" />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      if (typeof tailwind !== 'undefined') {
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                saffron: {
+                  50: '#fff8f1',
+                  100: '#ffedd5',
+                  200: '#fed7aa',
+                  500: '#f97316',
+                  600: '#ea580c',
+                  700: '#c2410c',
+                  800: '#9a3412'
+                },
+                ivory: '#fffdf9',
+                sand: '#faf6f0',
+                stoneborder: '#e6dfd5'
+              },
+              fontFamily: {
+                sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'system-ui', '-apple-system', 'sans-serif'],
+                mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
+              }
+            }
+          }
+        };
+      }
+    </script>
+
+    <!-- Fonts with clean offline system fallbacks -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+Devanagari:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Offline-resilient base & fallback styles so app works 100% even if CDN is unreachable -->
+    <style>
+      :root {
+        --bg-canvas: #fffdf9;
+        --bg-surface: #ffffff;
+        --bg-sand: #faf6f0;
+        --border-warm: #e6dfd5;
+        --saffron-main: #ea580c;
+        --saffron-dark: #c2410c;
+        --saffron-soft: #fff4eb;
+        --ink-primary: #1c1917;
+        --ink-muted: #57534e;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        background-color: var(--bg-canvas);
+        color: var(--ink-primary);
+        font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', system-ui, -apple-system, sans-serif;
+        padding-bottom: 96px !important;
+      }
+
+      #tool-modal,
+      #history-modal,
+      #privacy-dialog {
+        bottom: 88px;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .calc-btn {
+        transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), background-color 140ms ease;
+        user-select: none;
+        touch-action: manipulation;
+      }
+
+      .calc-btn:active {
+        transform: scale(0.96);
+      }
+
+      .calc-btn:focus-visible,
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #ea580c;
+        outline-offset: 2px;
+      }
+
+      @keyframes micRing {
+        0% {
+          transform: scale(1);
+          opacity: 0.75;
+        }
+        100% {
+          transform: scale(1.38);
+          opacity: 0;
+        }
+      }
+
+      .listening-ring::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 9999px;
+        border: 3px solid #ea580c;
+        animation: micRing 1.2s ease-out infinite;
+        pointer-events: none;
+      }
+
+      /* Custom scrollbar for history ledger */
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #faf6f0;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #d6ccc2;
+        border-radius: 4px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .calc-btn,
+        .listening-ring::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-[#fffdf9] text-stone-900 antialiased">
+    <!-- Top Bar (Strict 3-Zone Contract) -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#e6dfd5]">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-8">
+        <!-- Zone 1: Brand Title -->
+        <a href="#calculator" class="text-lg sm:text-xl font-extrabold tracking-tight text-stone-900 whitespace-nowrap shrink-0">
+          देसी <span class="text-[#ea580c]">AI</span> कैलकुलेटर
+        </a>
+
+        <!-- Zone 2: Concise Navigation Links -->
+        <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-stone-600">
+          <button type="button" onclick="openToolModal('discount')" class="hover:text-[#ea580c] transition-colors whitespace-nowrap shrink-0">
+            छूट (Discount)
+          </button>
+          <button type="button" onclick="openToolModal('age')" class="hover:text-[#ea580c] transition-colors whitespace-nowrap shrink-0">
+            उम्र (Age)
+          </button>
+          <button type="button" onclick="openToolModal('bigha')" class="hover:text-[#ea580c] transition-colors whitespace-nowrap shrink-0">
+            बीघा (Bigha)
+          </button>
+          <button type="button" onclick="openToolModal('emi')" class="hover:text-[#ea580c] transition-colors whitespace-nowrap shrink-0">
+            लोन किस्त (EMI)
+          </button>
+        </nav>
+
+        <!-- Zone 3: Single Primary Action -->
+        <div class="flex items-center shrink-0">
+          <button
+            type="button"
+            onclick="speakCurrentResult()"
+            class="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#e6dfd5] text-stone-800 text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 calc-btn"
+            title="बोलकर उत्तर सुनें (Listen Result)"
+          >
+            <svg class="w-4 h-4 text-[#ea580c] shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" />
+            </svg>
+            <span>उत्तर सुनें</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Responsive Container -->
+    <main id="calculator" class="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- LEFT / PRIMARY COLUMN: Display + Voice + Keypad + Desi Tools -->
+        <section class="lg:col-span-7 bg-white rounded-3xl border border-[#e6dfd5] p-4 sm:p-6 shadow-sm">
+          <!-- 1. TOP: Display with Recent History Preview -->
+          <div class="rounded-2xl bg-[#fffaf4] border-2 border-[#fed7aa] p-4 sm:p-5 mb-4">
+            <!-- Top Row inside Display: Last saved calculation from localStorage -->
+            <div class="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-[#f5e3cc] text-xs sm:text-sm text-stone-600">
+              <span class="font-semibold whitespace-nowrap shrink-0">पिछला हिसाब · Last:</span>
+              <button
+                type="button"
+                id="last-history-inline"
+                onclick="loadLastHistoryItem()"
+                class="font-mono tabular-nums text-stone-700 hover:text-[#ea580c] truncate text-right font-medium"
+                title="वापस लाने के लिए दबाएं"
+              >
+                कोई पुराना हिसाब नहीं (No history yet)
+              </button>
+            </div>
+
+            <!-- Expression / Breakdown Line -->
+            <div
+              id="calc-expression"
+              class="min-h-[28px] text-right text-base sm:text-lg font-medium text-stone-600 font-mono tabular-nums break-all"
+              aria-live="polite"
+            >
+              &nbsp;
+            </div>
+
+            <!-- Main Big Result Display for Seniors -->
+            <div
+              id="calc-display"
+              class="text-right text-4xl sm:text-5xl font-extrabold text-stone-900 font-mono tabular-nums tracking-tight break-all leading-tight mt-1"
+              aria-live="assertive"
+            >
+              0
+            </div>
+
+            <!-- Hindi Words / Explanation Helper Line -->
+            <div id="calc-explanation" class="min-h-[24px] mt-2 text-right text-sm sm:text-base font-semibold text-[#c2410c]">
+              संख्या दर्ज करें या माइक दबाकर बोलें
+            </div>
+          </div>
+
+          <!-- 2. MIDDLE: Voice Mic Section (webkitSpeechRecognition + Offline Hindi/English Parser) -->
+          <div class="rounded-2xl bg-[#faf6f0] border border-[#e6dfd5] p-3.5 sm:p-4 mb-4">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <!-- Voice Mic Button -->
+              <button
+                type="button"
+                id="voice-mic-btn"
+                onclick="toggleVoiceRecognition()"
+                class="relative min-h-[58px] px-5 py-3 rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 shadow-sm calc-btn flex-1"
+              >
+                <span id="mic-icon-wrap" class="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/20 shrink-0">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" />
+                  </svg>
+                </span>
+                <span id="voice-btn-label" class="whitespace-nowrap">बोलकर हिसाब करें (Tap to Speak)</span>
+              </button>
+
+              <!-- Speech Language Selector (Hindi/Hinglish vs English) -->
+              <div class="flex items-center gap-1 p-1 bg-white rounded-xl border border-[#e6dfd5] self-center sm:self-auto shrink-0">
+                <button
+                  type="button"
+                  id="lang-hi-btn"
+                  onclick="setVoiceLang('hi-IN')"
+                  class="min-h-[44px] px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap bg-[#ffedd5] text-[#9a3412]"
+                >
+                  हिंदी / Hinglish
+                </button>
+                <button
+                  type="button"
+                  id="lang-en-btn"
+                  onclick="setVoiceLang('en-IN')"
+                  class="min-h-[44px] px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap text-stone-600 hover:text-stone-900"
+                >
+                  English
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Voice Transcript & Offline Manual Command Input -->
+            <div class="mt-3 flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                id="voice-text-input"
+                placeholder='बोलें या लिखें: "500 ka atharah percent" या "1000 GST 18%"'
+                class="flex-1 min-h-[46px] px-3.5 py-2 rounded-xl bg-white border border-[#e6dfd5] text-stone-900 text-sm sm:text-base font-medium placeholder:text-stone-400"
+                onkeydown="if(event.key==='Enter'){runSmartTextCommand(this.value);}"
+              />
+              <button
+                type="button"
+                onclick="runSmartTextCommand(document.getElementById('voice-text-input').value)"
+                class="min-h-[46px] px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-sm sm:text-base font-bold whitespace-nowrap shrink-0 calc-btn"
+              >
+                हिसाब करें
+              </button>
+            </div>
+
+            <!-- Quick Tap Voice Demo Examples for Seniors -->
+            <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs sm:text-sm text-stone-600">
+              <span class="font-semibold text-stone-500">उदाहरण दबाएं:</span>
+              <button type="button" onclick="runSmartTextCommand('500 ka atharah percent')" class="underline hover:text-[#ea580c] font-medium whitespace-nowrap">
+                "500 ka atharah percent"
+              </button>
+              <span aria-hidden="true">·</span>
+              <button type="button" onclick="runSmartTextCommand('1200 par 18 percent GST')" class="underline hover:text-[#ea580c] font-medium whitespace-nowrap">
+                "1200 par 18% GST"
+              </button>
+              <span aria-hidden="true">·</span>
+              <button type="button" onclick="runSmartTextCommand('panch sau jama dhai sau')" class="underline hover:text-[#ea580c] font-medium whitespace-nowrap">
+                "panch sau jama dhai sau"
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. MODE TOGGLE: Normal + Scientific Toggle -->
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div class="flex items-center p-1 bg-[#faf6f0] border border-[#e6dfd5] rounded-xl w-full sm:w-auto">
+              <button
+                type="button"
+                id="mode-normal-btn"
+                onclick="setCalcMode('normal')"
+                class="flex-1 sm:flex-initial min-h-[44px] px-4 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors whitespace-nowrap bg-[#ea580c] text-white shadow-sm"
+              >
+                सामान्य (Normal)
+              </button>
+              <button
+                type="button"
+                id="mode-sci-btn"
+                onclick="setCalcMode('scientific')"
+                class="flex-1 sm:flex-initial min-h-[44px] px-4 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors whitespace-nowrap text-stone-700 hover:text-stone-900"
+              >
+                वैज्ञानिक (Scientific)
+              </button>
+            </div>
+
+            <!-- Angle Unit Toggle (Visible in Scientific Mode) -->
+            <button
+              type="button"
+              id="angle-unit-btn"
+              onclick="toggleAngleUnit()"
+              class="hidden min-h-[44px] px-3.5 py-2 rounded-xl bg-[#faf6f0] border border-[#e6dfd5] text-sm font-bold text-stone-800 whitespace-nowrap shrink-0 calc-btn"
+            >
+              कोण: DEG
+            </button>
+          </div>
+
+          <!-- SCIENTIFIC PAD (Toggled) -->
+          <div id="scientific-pad" class="hidden grid-cols-4 gap-2 sm:gap-2.5 mb-3 p-3 rounded-2xl bg-[#faf6f0] border border-[#e6dfd5]">
+            <button type="button" onclick="applySciFunc('sin')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              sin
+            </button>
+            <button type="button" onclick="applySciFunc('cos')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              cos
+            </button>
+            <button type="button" onclick="applySciFunc('tan')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              tan
+            </button>
+            <button type="button" onclick="applySciFunc('sqrt')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              √ वर्गमूल
+            </button>
+            <button type="button" onclick="applySciFunc('sq')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              x² वर्ग
+            </button>
+            <button type="button" onclick="appendOperator('^')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              xʸ घात
+            </button>
+            <button type="button" onclick="applySciFunc('log')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              log₁₀
+            </button>
+            <button type="button" onclick="applySciFunc('ln')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              ln
+            </button>
+            <button type="button" onclick="insertConstant('pi')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              π (पाई)
+            </button>
+            <button type="button" onclick="appendToken('(')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-lg text-stone-800 hover:bg-[#ffedd5]">
+              (
+            </button>
+            <button type="button" onclick="appendToken(')')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-lg text-stone-800 hover:bg-[#ffedd5]">
+              )
+            </button>
+            <button type="button" onclick="applySciFunc('inv')" class="calc-btn min-h-[52px] rounded-xl bg-white border border-[#e6dfd5] font-bold text-base text-stone-800 hover:bg-[#ffedd5]">
+              1/x
+            </button>
+          </div>
+
+          <!-- 4. EXTRA 3 DESI UTILITY ROWS (Strictly matching prompt layout) -->
+          <div class="space-y-2.5 mb-4" aria-label="देसी विशेष सुविधाएं">
+            <!-- Extra Row 1: GST 18% | GST 5% | Discount% -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-3">
+              <button
+                type="button"
+                onclick="handleQuickGST(18)"
+                class="calc-btn min-h-[60px] px-2 py-2.5 rounded-2xl bg-[#fff4eb] hover:bg-[#ffedd5] border-2 border-[#fdba74] text-stone-900 flex flex-col items-center justify-center"
+              >
+                <span class="text-base sm:text-lg font-extrabold text-[#c2410c] whitespace-nowrap">GST 18%</span>
+                <span class="text-xs font-semibold text-stone-600 whitespace-nowrap">जीएसटी जोड़ें</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="handleQuickGST(5)"
+                class="calc-btn min-h-[60px] px-2 py-2.5 rounded-2xl bg-[#fff4eb] hover:bg-[#ffedd5] border-2 border-[#fdba74] text-stone-900 flex flex-col items-center justify-center"
+              >
+                <span class="text-base sm:text-lg font-extrabold text-[#c2410c] whitespace-nowrap">GST 5%</span>
+                <span class="text-xs font-semibold text-stone-600 whitespace-nowrap">जीएसटी जोड़ें</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="openToolModal('discount')"
+                class="calc-btn min-h-[60px] px-2 py-2.5 rounded-2xl bg-[#fff4eb] hover:bg-[#ffedd5] border-2 border-[#fdba74] text-stone-900 flex flex-col items-center justify-center"
+              >
+                <span class="text-base sm:text-lg font-extrabold text-[#c2410c] whitespace-nowrap">Discount%</span>
+                <span class="text-xs font-semibold text-stone-600 whitespace-nowrap">छूट निकालें</span>
+              </button>
+            </div>
+
+            <!-- Extra Row 2: Age Calculator | Bigha to SqFt | Loan EMI -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-3">
+              <button
+                type="button"
+                onclick="openToolModal('age')"
+                class="calc-btn min-h-[60px] px-2 py-2.5 rounded-2xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#d6ccc2] text-stone-900 flex flex-col items-center justify-center"
+              >
+                <span class="text-sm sm:text-base font-extrabold text-stone-900 whitespace-nowrap">Age Calc</span>
+                <span class="text-xs font-semibold text-stone-600 whitespace-nowrap">उम्र निकालें</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="openToolModal('bigha')"
+                class="calc-btn min-h-[60px] px-2 py-2.5 rounded-2xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#d6ccc2] text-stone-900 flex flex-col items-center justify-center"
+              >
+                <span class="text-sm sm:text-base font-extrabold text-stone-900 whitespace-nowrap">Bigha ⇄ SqFt</span>
+                <span class="text-xs font-semibold text-stone-600 whitespace-nowrap">बीघा / वर्ग फुट</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="openToolModal('emi')"
+                class="calc-btn min-h-[60px] px-2 py-2.5 rounded-2xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#d6ccc2] text-stone-900 flex flex-col items-center justify-center"
+              >
+                <span class="text-sm sm:text-base font-extrabold text-stone-900 whitespace-nowrap">Loan EMI</span>
+                <span class="text-xs font-semibold text-stone-600 whitespace-nowrap">लोन किस्त</span>
+              </button>
+            </div>
+
+            <!-- Extra Row 3: History Button -->
+            <div>
+              <button
+                type="button"
+                onclick="openHistoryDrawer()"
+                class="calc-btn w-full min-h-[54px] px-4 py-2.5 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-base sm:text-lg flex items-center justify-center gap-2.5"
+              >
+                <svg class="w-5 h-5 text-[#fed7aa] shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="whitespace-nowrap">पुराना हिसाब देखें (History</span>
+                <span id="history-count-label" class="font-mono tabular-nums text-[#fed7aa]">0</span>
+                <span class="whitespace-nowrap">)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. MAIN SENIOR-FRIENDLY BIG NUMBER KEYPAD -->
+          <div class="grid grid-cols-4 gap-2.5 sm:gap-3" role="group" aria-label="कैलकुलेटर बटन">
+            <!-- Row A -->
+            <button
+              type="button"
+              onclick="clearAll()"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-red-50 hover:bg-red-100 border-2 border-red-200 text-red-800 flex flex-col items-center justify-center"
+            >
+              <span class="text-xl sm:text-2xl font-extrabold leading-none">AC</span>
+              <span class="text-xs font-bold mt-1">साफ करें</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="backspace()"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#faf6f0] hover:bg-stone-200/70 border border-[#d6ccc2] text-stone-900 flex flex-col items-center justify-center"
+            >
+              <span class="text-xl sm:text-2xl font-extrabold leading-none">⌫</span>
+              <span class="text-xs font-bold text-stone-600 mt-1">मिटाएं</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="handlePercentKey()"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#d6ccc2] text-stone-900 flex flex-col items-center justify-center"
+            >
+              <span class="text-2xl font-extrabold leading-none">%</span>
+              <span class="text-xs font-bold text-stone-600 mt-1">प्रतिशत</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="appendOperator('/')"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#ffedd5] hover:bg-[#fed7aa] border border-[#fdba74] text-[#9a3412] flex flex-col items-center justify-center"
+            >
+              <span class="text-2xl sm:text-3xl font-extrabold leading-none">÷</span>
+              <span class="text-xs font-bold mt-1">भाग</span>
+            </button>
+
+            <!-- Row B -->
+            <button type="button" onclick="appendDigit('7')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              7
+            </button>
+            <button type="button" onclick="appendDigit('8')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              8
+            </button>
+            <button type="button" onclick="appendDigit('9')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              9
+            </button>
+            <button
+              type="button"
+              onclick="appendOperator('*')"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#ffedd5] hover:bg-[#fed7aa] border border-[#fdba74] text-[#9a3412] flex flex-col items-center justify-center"
+            >
+              <span class="text-2xl sm:text-3xl font-extrabold leading-none">×</span>
+              <span class="text-xs font-bold mt-1">गुणा</span>
+            </button>
+
+            <!-- Row C -->
+            <button type="button" onclick="appendDigit('4')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              4
+            </button>
+            <button type="button" onclick="appendDigit('5')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              5
+            </button>
+            <button type="button" onclick="appendDigit('6')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              6
+            </button>
+            <button
+              type="button"
+              onclick="appendOperator('-')"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#ffedd5] hover:bg-[#fed7aa] border border-[#fdba74] text-[#9a3412] flex flex-col items-center justify-center"
+            >
+              <span class="text-2xl sm:text-3xl font-extrabold leading-none">−</span>
+              <span class="text-xs font-bold mt-1">घटाव</span>
+            </button>
+
+            <!-- Row D -->
+            <button type="button" onclick="appendDigit('1')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              1
+            </button>
+            <button type="button" onclick="appendDigit('2')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              2
+            </button>
+            <button type="button" onclick="appendDigit('3')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              3
+            </button>
+            <button
+              type="button"
+              onclick="appendOperator('+')"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#ffedd5] hover:bg-[#fed7aa] border border-[#fdba74] text-[#9a3412] flex flex-col items-center justify-center"
+            >
+              <span class="text-2xl sm:text-3xl font-extrabold leading-none">+</span>
+              <span class="text-xs font-bold mt-1">जोड़</span>
+            </button>
+
+            <!-- Row E -->
+            <button type="button" onclick="appendDigit('00')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-xl sm:text-2xl font-extrabold">
+              00
+            </button>
+            <button type="button" onclick="appendDigit('0')" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-2xl sm:text-3xl font-extrabold">
+              0
+            </button>
+            <button type="button" onclick="appendDecimal()" class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-white hover:bg-[#faf6f0] border-2 border-[#e6dfd5] text-stone-900 font-mono tabular-nums text-3xl font-extrabold">
+              .
+            </button>
+            <button
+              type="button"
+              onclick="calculateEquals()"
+              class="calc-btn min-h-[66px] sm:min-h-[72px] rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white flex flex-col items-center justify-center shadow-sm"
+            >
+              <span class="text-2xl sm:text-3xl font-extrabold leading-none">=</span>
+              <span class="text-xs font-bold mt-1">बराबर</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- RIGHT COLUMN (Desktop Bahi-Khata Ledger + Hindi Voice Guide) -->
+        <aside class="lg:col-span-5 space-y-6">
+          <!-- Bahi-Khata Persistent History Card -->
+          <div class="bg-white rounded-3xl border border-[#e6dfd5] p-5 sm:p-6 shadow-sm">
+            <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e6dfd5]">
+              <div>
+                <h2 class="text-xl font-extrabold text-stone-900">बही-खाता (History)</h2>
+                <p class="text-xs sm:text-sm text-stone-600 mt-0.5">सभी हिसाब फोन में सुरक्षित रहते हैं · ऑफलाइन</p>
+              </div>
+              <div id="desktop-clear-wrap">
+                <button
+                  type="button"
+                  onclick="promptClearHistory('desktop')"
+                  class="min-h-[40px] px-3 py-1.5 rounded-xl bg-[#faf6f0] hover:bg-red-50 hover:text-red-700 border border-[#e6dfd5] text-xs sm:text-sm font-bold text-stone-700 whitespace-nowrap calc-btn"
+                >
+                  सब मिटाएं
+                </button>
+              </div>
+            </div>
+
+            <!-- Inline Clear Confirmation (No window.confirm!) -->
+            <div id="desktop-clear-confirm" class="hidden mt-3 p-3 rounded-xl bg-red-50 border border-red-200 items-center justify-between gap-2">
+              <span class="text-sm font-bold text-red-900">क्या पूरा इतिहास मिटा दें?</span>
+              <div class="flex items-center gap-2 shrink-0">
+                <button type="button" onclick="confirmClearHistory()" class="min-h-[38px] px-3 py-1 rounded-lg bg-red-600 text-white text-sm font-bold">
+                  हाँ, मिटाएं
+                </button>
+                <button type="button" onclick="cancelClearHistory()" class="min-h-[38px] px-3 py-1 rounded-lg bg-white border border-stone-300 text-stone-700 text-sm font-bold">
+                  नहीं
+                </button>
+              </div>
+            </div>
+
+            <div id="desktop-history-list" class="mt-4 max-h-[380px] overflow-y-auto custom-scroll divide-y divide-[#efe9e0]">
+              <!-- Populated by Vanilla JS -->
+            </div>
+          </div>
+
+          <!-- Voice Guide Card for Elders -->
+          <div class="bg-white rounded-3xl border border-[#e6dfd5] p-5 sm:p-6 shadow-sm">
+            <h3 class="text-lg font-extrabold text-stone-900 mb-2">आवाज़ से कैसे पूछें? (Voice Guide)</h3>
+            <p class="text-sm text-stone-600 leading-relaxed mb-4">
+              माइक दबाकर हिंदी या अंग्रेजी में बोलें। इंटरनेट के बिना भी लिखित या सुने गए शब्दों का तुरंत हिसाब होता है:
+            </p>
+            <div class="space-y-2.5 text-sm">
+              <button
+                type="button"
+                onclick="runSmartTextCommand('500 ka atharah percent')"
+                class="w-full text-left p-3 rounded-xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#e6dfd5] transition-colors flex items-center justify-between gap-2"
+              >
+                <span class="font-semibold text-stone-800">"500 ka atharah percent"</span>
+                <span class="font-mono tabular-nums font-bold text-[#c2410c] shrink-0">= 90</span>
+              </button>
+              <button
+                type="button"
+                onclick="runSmartTextCommand('2500 ka 18 percent GST')"
+                class="w-full text-left p-3 rounded-xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#e6dfd5] transition-colors flex items-center justify-between gap-2"
+              >
+                <span class="font-semibold text-stone-800">"2500 ka 18 percent GST"</span>
+                <span class="font-mono tabular-nums font-bold text-[#c2410c] shrink-0">= ₹2,950</span>
+              </button>
+              <button
+                type="button"
+                onclick="runSmartTextCommand('hazaar ka pachis percent discount')"
+                class="w-full text-left p-3 rounded-xl bg-[#faf6f0] hover:bg-[#ffedd5] border border-[#e6dfd5] transition-colors flex items-center justify-between gap-2"
+              >
+                <span class="font-semibold text-stone-800">"hazaar ka pachis percent discount"</span>
+                <span class="font-mono tabular-nums font-bold text-[#c2410c] shrink-0">= ₹750</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Reserved space for pinned AdMob banner (60px) + Privacy Footer (28px) -->
+    <div style="height: 88px;" aria-hidden="true"></div>
+
+    <!-- PLAY STORE PRIVACY POLICY FOOTER - Fixed at the very bottom (28px height) -->
+    <footer
+      id="privacy-footer-bar"
+      style="position: fixed; bottom: 0; left: 0; right: 0; height: 28px; line-height: 28px; background: #FFFDF9; border-top: 1px solid #E6DFD5; text-align: center; z-index: 99998;"
+    >
+      <button
+        type="button"
+        onclick="showPrivacyDialog()"
+        style="font-size: 12px; color: #6B7280; text-decoration: underline; background: transparent; border: none; cursor: pointer; text-align: center; line-height: 28px; padding: 0;"
+      >
+        Privacy Policy - We don't collect any data, all calculations offline
+      </button>
+    </footer>
+
+    <!-- MODAL FOR DESI TOOLS: Discount%, Age Calculator, Bigha to SqFt, Loan EMI -->
+    <div
+      id="tool-modal"
+      class="fixed top-0 left-0 right-0 bottom-[88px] z-50 hidden items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm p-0 sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tool-modal-title"
+    >
+      <div class="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl border border-[#e6dfd5] p-5 sm:p-6 shadow-xl max-h-[calc(100vh-85px)] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e6dfd5]">
+          <h2 id="tool-modal-title" class="text-xl sm:text-2xl font-extrabold text-stone-900">देसी टूल</h2>
+          <button
+            type="button"
+            onclick="closeToolModal()"
+            class="min-h-[44px] min-w-[44px] rounded-xl bg-[#faf6f0] hover:bg-stone-200 text-stone-800 font-bold text-lg flex items-center justify-center"
+            aria-label="बंद करें"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- 0. GST CALCULATOR PANEL (Opens if screen is 0 when tapping GST 18% / 5%) -->
+        <div id="panel-gst" class="tool-panel hidden pt-4 space-y-4">
+          <div>
+            <label for="gst-amount" class="block text-base font-bold text-stone-800 mb-1.5">मूल राशि (Amount ₹)</label>
+            <input
+              type="number"
+              id="gst-amount"
+              inputmode="decimal"
+              placeholder="उदा. 1000"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-2xl font-mono tabular-nums font-bold text-stone-900"
+            />
+          </div>
+          <div>
+            <label for="gst-rate" class="block text-base font-bold text-stone-800 mb-1.5">जीएसटी दर (GST %)</label>
+            <input
+              type="number"
+              id="gst-rate"
+              inputmode="decimal"
+              value="18"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-2xl font-mono tabular-nums font-bold text-stone-900"
+            />
+            <div class="grid grid-cols-4 gap-2 mt-2.5">
+              <button type="button" onclick="setModalGstRate(5)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">5%</button>
+              <button type="button" onclick="setModalGstRate(12)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">12%</button>
+              <button type="button" onclick="setModalGstRate(18)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">18%</button>
+              <button type="button" onclick="setModalGstRate(28)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">28%</button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="calculateGstModalTool()"
+            class="w-full min-h-[56px] rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white text-lg font-extrabold calc-btn"
+          >
+            जीएसटी जोड़ें (Calculate GST)
+          </button>
+          <div id="gst-result-box" class="hidden p-4 rounded-2xl bg-[#fffaf4] border-2 border-[#fed7aa] space-y-1">
+            <div class="text-sm font-semibold text-stone-600">कुल राशि जीएसटी सहित (Total with GST):</div>
+            <div id="gst-final" class="text-3xl font-extrabold font-mono tabular-nums text-stone-900">₹0</div>
+            <div id="gst-added" class="text-sm font-bold text-[#c2410c]"></div>
+          </div>
+        </div>
+
+        <!-- 1. DISCOUNT CALCULATOR PANEL -->
+        <div id="panel-discount" class="tool-panel hidden pt-4 space-y-4">
+          <div>
+            <label for="disc-price" class="block text-base font-bold text-stone-800 mb-1.5">अंकित मूल्य / कीमत (MRP ₹)</label>
+            <input
+              type="number"
+              id="disc-price"
+              inputmode="decimal"
+              placeholder="उदा. 1500"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-2xl font-mono tabular-nums font-bold text-stone-900"
+            />
+          </div>
+          <div>
+            <label for="disc-rate" class="block text-base font-bold text-stone-800 mb-1.5">छूट प्रतिशत (Discount %)</label>
+            <input
+              type="number"
+              id="disc-rate"
+              inputmode="decimal"
+              value="10"
+              placeholder="उदा. 10"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-2xl font-mono tabular-nums font-bold text-stone-900"
+            />
+            <div class="grid grid-cols-5 gap-2 mt-2.5">
+              <button type="button" onclick="setQuickDiscount(5)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">5%</button>
+              <button type="button" onclick="setQuickDiscount(10)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">10%</button>
+              <button type="button" onclick="setQuickDiscount(15)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">15%</button>
+              <button type="button" onclick="setQuickDiscount(20)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">20%</button>
+              <button type="button" onclick="setQuickDiscount(50)" class="min-h-[42px] rounded-xl bg-[#faf6f0] border border-[#d6ccc2] font-bold text-sm hover:bg-[#ffedd5]">50%</button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="calculateDiscountTool()"
+            class="w-full min-h-[56px] rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white text-lg font-extrabold calc-btn"
+          >
+            छूट का हिसाब करें (Calculate Discount)
+          </button>
+          <div id="disc-result-box" class="hidden p-4 rounded-2xl bg-[#fffaf4] border-2 border-[#fed7aa] space-y-1">
+            <div class="text-sm font-semibold text-stone-600">देय राशि (Final Price):</div>
+            <div id="disc-final" class="text-3xl font-extrabold font-mono tabular-nums text-stone-900">₹0</div>
+            <div id="disc-saved" class="text-base font-bold text-emerald-700">कुल बचत: ₹0</div>
+          </div>
+        </div>
+
+        <!-- 2. AGE CALCULATOR PANEL -->
+        <div id="panel-age" class="tool-panel hidden pt-4 space-y-4">
+          <div>
+            <label for="age-dob" class="block text-base font-bold text-stone-800 mb-1.5">जन्म तिथि चुनें (Date of Birth)</label>
+            <input
+              type="date"
+              id="age-dob"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-lg font-mono tabular-nums font-bold text-stone-900"
+            />
+          </div>
+          <div>
+            <label for="age-target" class="block text-base font-bold text-stone-800 mb-1.5">आज की तारीख (As on Date)</label>
+            <input
+              type="date"
+              id="age-target"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-lg font-mono tabular-nums font-bold text-stone-900"
+            />
+          </div>
+          <button
+            type="button"
+            onclick="calculateAgeTool()"
+            class="w-full min-h-[56px] rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white text-lg font-extrabold calc-btn"
+          >
+            सही उम्र निकालें (Calculate Age)
+          </button>
+          <div id="age-result-box" class="hidden p-4 rounded-2xl bg-[#fffaf4] border-2 border-[#fed7aa] space-y-2">
+            <div class="text-sm font-semibold text-stone-600">आपकी कुल उम्र (Exact Age):</div>
+            <div id="age-main-output" class="text-2xl sm:text-3xl font-extrabold text-[#c2410c] tabular-nums"></div>
+            <div id="age-extra-output" class="text-sm font-semibold text-stone-700 tabular-nums"></div>
+          </div>
+        </div>
+
+        <!-- 3. BIGHA <-> SQFT CONVERTER PANEL (Bidirectional) -->
+        <div id="panel-bigha" class="tool-panel hidden pt-4 space-y-4">
+          <!-- Direction Toggle: Bigha to SqFt | SqFt to Bigha -->
+          <div class="grid grid-cols-2 gap-1.5 p-1.5 bg-[#faf6f0] border border-[#e6dfd5] rounded-2xl" role="group" aria-label="Conversion Direction">
+            <button
+              type="button"
+              id="mode-bigha-to-sqft"
+              onclick="setBighaDirection('bigha_to_sqft')"
+              class="min-h-[48px] px-3 py-2 rounded-xl text-sm sm:text-base font-extrabold transition-colors whitespace-nowrap bg-[#ea580c] text-white shadow-sm calc-btn"
+            >
+              बीघा → वर्ग फुट (Bigha to SqFt)
+            </button>
+            <button
+              type="button"
+              id="mode-sqft-to-bigha"
+              onclick="setBighaDirection('sqft_to_bigha')"
+              class="min-h-[48px] px-3 py-2 rounded-xl text-sm sm:text-base font-extrabold transition-colors whitespace-nowrap text-stone-700 hover:text-stone-900 calc-btn"
+            >
+              वर्ग फुट → बीघा (SqFt to Bigha)
+            </button>
+          </div>
+
+          <div>
+            <label for="bigha-region" class="block text-base font-bold text-stone-800 mb-1.5">राज्य / क्षेत्र चुनें (Select State Standard)</label>
+            <select
+              id="bigha-region"
+              onchange="calculateBighaTool(false)"
+              class="w-full min-h-[52px] px-4 py-2.5 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-base font-bold text-stone-900"
+            >
+              <option value="27225">UP / बिहार / राजस्थान पक्का बीघा (27,225 Sq.Ft)</option>
+              <option value="9075">कच्चा बीघा — UP / पंजाब / हरियाणा (9,075 Sq.Ft)</option>
+              <option value="17424">गुजरात / राजस्थान मध्यम बीघा (17,424 Sq.Ft)</option>
+              <option value="14400">पश्चिम बंगाल / असम बीघा (14,400 Sq.Ft)</option>
+              <option value="12000">मध्य प्रदेश बीघा (12,000 Sq.Ft)</option>
+              <option value="6806.25">उत्तराखंड / हिमाचल बीघा (6,806.25 Sq.Ft)</option>
+            </select>
+          </div>
+
+          <div>
+            <label id="bigha-input-label" for="bigha-input" class="block text-base font-bold text-stone-800 mb-1.5">
+              बीघा की संख्या (Enter Bigha)
+            </label>
+            <input
+              type="number"
+              id="bigha-input"
+              inputmode="decimal"
+              value="1"
+              step="any"
+              placeholder="उदा. 2.5"
+              oninput="calculateBighaTool(false)"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-2xl font-mono tabular-nums font-bold text-stone-900"
+            />
+          </div>
+
+          <button
+            type="button"
+            id="bigha-convert-btn"
+            onclick="calculateBighaTool(true)"
+            class="w-full min-h-[56px] rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white text-lg font-extrabold calc-btn"
+          >
+            वर्ग फुट में बदलें (Convert to Sq.Ft)
+          </button>
+
+          <div id="bigha-result-box" class="p-4 rounded-2xl bg-[#fffaf4] border-2 border-[#fed7aa] space-y-2">
+            <div id="bigha-result-caption" class="text-sm font-semibold text-stone-600">कुल क्षेत्रफल (Total Area):</div>
+            <div id="bigha-sqft-output" class="text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-stone-900">27,225 वर्ग फुट (Sq.Ft)</div>
+            <div id="bigha-other-units" class="text-sm font-semibold text-stone-700 font-mono tabular-nums">
+              3,025 गज (Sq.Yd) · 0.625 एकड़ (Acre)
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. LOAN EMI CALCULATOR PANEL -->
+        <div id="panel-emi" class="tool-panel hidden pt-4 space-y-4">
+          <div>
+            <label for="emi-principal" class="block text-base font-bold text-stone-800 mb-1.5">लोन राशि / मूलधन (Loan Amount ₹)</label>
+            <input
+              type="number"
+              id="emi-principal"
+              inputmode="decimal"
+              value="100000"
+              placeholder="उदा. 100000"
+              class="w-full min-h-[54px] px-4 py-3 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-2xl font-mono tabular-nums font-bold text-stone-900"
+            />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="emi-rate" class="block text-base font-bold text-stone-800 mb-1.5">ब्याज दर (% सालाना)</label>
+              <input
+                type="number"
+                id="emi-rate"
+                inputmode="decimal"
+                step="0.1"
+                value="10"
+                class="w-full min-h-[52px] px-4 py-2.5 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-xl font-mono tabular-nums font-bold text-stone-900"
+              />
+            </div>
+            <div>
+              <label for="emi-months" class="block text-base font-bold text-stone-800 mb-1.5">अवधि (महीने / Months)</label>
+              <input
+                type="number"
+                id="emi-months"
+                inputmode="numeric"
+                value="12"
+                class="w-full min-h-[52px] px-4 py-2.5 rounded-2xl bg-[#fffdf9] border-2 border-[#d6ccc2] text-xl font-mono tabular-nums font-bold text-stone-900"
+              />
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="document.getElementById('emi-months').value=12" class="min-h-[40px] px-3 rounded-xl bg-[#faf6f0] border border-[#d6ccc2] text-sm font-bold">1 वर्ष (12m)</button>
+            <button type="button" onclick="document.getElementById('emi-months').value=24" class="min-h-[40px] px-3 rounded-xl bg-[#faf6f0] border border-[#d6ccc2] text-sm font-bold">2 वर्ष (24m)</button>
+            <button type="button" onclick="document.getElementById('emi-months').value=36" class="min-h-[40px] px-3 rounded-xl bg-[#faf6f0] border border-[#d6ccc2] text-sm font-bold">3 वर्ष (36m)</button>
+            <button type="button" onclick="document.getElementById('emi-months').value=60" class="min-h-[40px] px-3 rounded-xl bg-[#faf6f0] border border-[#d6ccc2] text-sm font-bold">5 वर्ष (60m)</button>
+          </div>
+          <button
+            type="button"
+            onclick="calculateEMITool()"
+            class="w-full min-h-[56px] rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white text-lg font-extrabold calc-btn"
+          >
+            मासिक किस्त निकालें (Calculate EMI)
+          </button>
+          <div id="emi-result-box" class="hidden p-4 rounded-2xl bg-[#fffaf4] border-2 border-[#fed7aa] space-y-1.5">
+            <div class="text-sm font-semibold text-stone-600">मासिक किस्त (Monthly EMI):</div>
+            <div id="emi-monthly" class="text-3xl font-extrabold font-mono tabular-nums text-[#c2410c]">₹0</div>
+            <div id="emi-breakdown" class="text-sm font-semibold text-stone-700 font-mono tabular-nums"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PRIVACY POLICY ALERT DIALOG (Matches showPrivacyDialog AlertDialog spec) -->
+    <div
+      id="privacy-dialog"
+      class="fixed top-0 left-0 right-0 bottom-[88px] z-50 hidden items-center justify-center bg-black/55 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="privacy-dialog-title"
+    >
+      <div class="w-full max-w-md bg-white rounded-3xl border border-[#e6dfd5] p-6 shadow-xl flex flex-col max-h-[calc(100vh-100px)]">
+        <h2 id="privacy-dialog-title" class="text-lg sm:text-xl font-extrabold text-stone-900 pb-3 border-b border-[#e6dfd5]">
+          Privacy Policy / गोपनीयता नीति
+        </h2>
+        <div class="py-4 overflow-y-auto custom-scroll text-sm sm:text-base text-stone-700 leading-relaxed space-y-4">
+          <div>
+            <p class="font-bold text-stone-900 mb-1">English:</p>
+            <p>
+              We don't collect any data, all calculations are done offline on your device. No personal information is stored or shared. Ads are served by Google AdMob.
+            </p>
+          </div>
+          <div>
+            <p class="font-bold text-stone-900 mb-1">हिंदी:</p>
+            <p>
+              हम कोई भी डेटा एकत्र नहीं करते हैं, सभी गणनाएं आपके फोन में ऑफलाइन होती हैं। कोई भी व्यक्तिगत जानकारी स्टोर या शेयर नहीं की जाती। विज्ञापन Google AdMob द्वारा दिखाए जाते हैं.
+            </p>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-[#e6dfd5] flex justify-end">
+          <button
+            type="button"
+            onclick="closePrivacyDialog()"
+            class="min-h-[44px] min-w-[72px] px-5 py-2 rounded-xl text-[#ea580c] hover:bg-[#fff4eb] font-extrabold text-sm sm:text-base calc-btn"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY DRAWER MODAL (For Mobile & Row 3 History Button) -->
+    <div
+      id="history-modal"
+      class="fixed top-0 left-0 right-0 bottom-[88px] z-50 hidden items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm p-0 sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="history-modal-title"
+    >
+      <div class="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl border border-[#e6dfd5] p-5 sm:p-6 shadow-xl max-h-[calc(100vh-85px)] flex flex-col">
+        <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e6dfd5]">
+          <div>
+            <h2 id="history-modal-title" class="text-xl sm:text-2xl font-extrabold text-stone-900">पुराना हिसाब (History)</h2>
+            <p class="text-xs sm:text-sm text-stone-600">किसी भी हिसाब को दबाकर वापस स्क्रीन पर लाएं</p>
+          </div>
+          <button
+            type="button"
+            onclick="closeHistoryDrawer()"
+            class="min-h-[44px] min-w-[44px] rounded-xl bg-[#faf6f0] hover:bg-stone-200 text-stone-800 font-bold text-lg flex items-center justify-center shrink-0"
+            aria-label="बंद करें"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div id="modal-history-list" class="py-3 overflow-y-auto custom-scroll divide-y divide-[#efe9e0] flex-1">
+          <!-- Populated by Vanilla JS -->
+        </div>
+
+        <div class="pt-3 border-t border-[#e6dfd5] flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onclick="confirmClearHistory()"
+            class="min-h-[46px] px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-bold calc-btn"
+          >
+            सारा इतिहास मिटाएं (Clear All)
+          </button>
+          <button
+            type="button"
+            onclick="closeHistoryDrawer()"
+            class="min-h-[46px] px-5 py-2 rounded-xl bg-stone-900 text-white text-sm font-bold calc-btn"
+          >
+            बंद करें
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VANILLA JS ENGINE: Calculator, Hindi/English Voice Recognition, Smart Parser & Offline Tools -->
+    <script>
+      (function () {
+        'use strict';
+
+        var STORAGE_KEY = 'desi_ai_calc_history_v1';
+        var expression = '';
+        var currentResult = '0';
+        var justEvaluated = false;
+        var calcMode = 'normal';
+        var angleUnit = 'DEG';
+        var voiceLang = 'hi-IN';
+        var recognition = null;
+        var isListening = false;
+        var historyItems = [];
+
+        // Format number in Indian comma style (1,00,000)
+        function formatIndianNumber(num) {
+          if (num === null || num === undefined || num === '' || isNaN(Number(num))) {
+            return String(num);
+          }
+          var n = Number(num);
+          if (!isFinite(n)) return 'अमान्य (Error)';
+          // Round floating point noise
+          var rounded = Math.round(n * 1000000) / 1000000;
+          return rounded.toLocaleString('en-IN', { maximumFractionDigits: 4 });
+        }
+
+        // Load history from localStorage
+        function loadHistory() {
+          try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            historyItems = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(historyItems)) historyItems = [];
+          } catch (e) {
+            historyItems = [];
+          }
+          renderHistory();
+        }
+
+        function saveHistoryItem(label, resultValue, subtitle) {
+          var entry = {
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            label: label,
+            result: String(resultValue),
+            formattedResult: !isNaN(Number(resultValue)) ? formatIndianNumber(resultValue) : String(resultValue),
+            subtitle: subtitle || '',
+            time: new Date().toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })
+          };
+          historyItems.unshift(entry);
+          if (historyItems.length > 50) {
+            historyItems = historyItems.slice(0, 50);
+          }
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(historyItems));
+          } catch (e) {
+            // Ignore quota errors
+          }
+          renderHistory();
+        }
+
+        function renderHistory() {
+          var countEl = document.getElementById('history-count-label');
+          var lastInlineEl = document.getElementById('last-history-inline');
+          var desktopList = document.getElementById('desktop-history-list');
+          var modalList = document.getElementById('modal-history-list');
+
+          if (countEl) countEl.textContent = String(historyItems.length);
+
+          if (lastInlineEl) {
+            if (historyItems.length > 0) {
+              var latest = historyItems[0];
+              lastInlineEl.textContent = latest.label + ' = ' + latest.formattedResult;
+            } else {
+              lastInlineEl.textContent = 'कोई पुराना हिसाब नहीं (No history yet)';
+            }
+          }
+
+          var emptyHtml =
+            '<div class="py-10 text-center text-stone-500 text-sm font-medium">अभी तक कोई हिसाब सेव नहीं हुआ है।<br/>कोई भी गणना करने पर यहाँ अपने-आप सेव हो जाएगा।</div>';
+
+          if (historyItems.length === 0) {
+            if (desktopList) desktopList.innerHTML = emptyHtml;
+            if (modalList) modalList.innerHTML = emptyHtml;
+            return;
+          }
+
+          var html = historyItems
+            .map(function (item, idx) {
+              var sub = item.subtitle
+                ? '<div class="text-xs text-[#c2410c] font-semibold mt-0.5">' + escapeHtml(item.subtitle) + '</div>'
+                : '';
+              return (
+                '<button type="button" onclick="recallHistoryIndex(' +
+                idx +
+                ')" class="w-full text-left py-3 px-2.5 hover:bg-[#fff8f1] rounded-xl transition-colors flex items-center justify-between gap-3">' +
+                '<div class="min-w-0 flex-1">' +
+                '<div class="text-sm font-semibold text-stone-700 truncate">' +
+                escapeHtml(item.label) +
+                '</div>' +
+                sub +
+                '<div class="text-[11px] text-stone-400 mt-0.5">' +
+                escapeHtml(item.time) +
+                '</div>' +
+                '</div>' +
+                '<div class="text-right font-mono tabular-nums text-lg font-extrabold text-stone-900 shrink-0">' +
+                escapeHtml(item.formattedResult) +
+                '</div>' +
+                '</button>'
+              );
+            })
+            .join('');
+
+          if (desktopList) desktopList.innerHTML = html;
+          if (modalList) modalList.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        window.recallHistoryIndex = function (idx) {
+          var item = historyItems[idx];
+          if (!item) return;
+          var numeric = Number(String(item.result).replace(/,/g, ''));
+          if (!isNaN(numeric) && String(item.result).trim() !== '') {
+            expression = String(numeric);
+            currentResult = formatIndianNumber(numeric);
+            justEvaluated = true;
+            updateDisplayUI(item.label, currentResult, item.subtitle || 'पुराने हिसाब से वापस लाया गया');
+          } else {
+            updateDisplayUI(item.label, item.formattedResult, item.subtitle || 'पुराना हिसाब');
+          }
+          closeHistoryDrawer();
+        };
+
+        window.loadLastHistoryItem = function () {
+          if (historyItems.length > 0) {
+            window.recallHistoryIndex(0);
+          }
+        };
+
+        window.promptClearHistory = function () {
+          var box = document.getElementById('desktop-clear-confirm');
+          if (box) {
+            box.classList.remove('hidden');
+            box.classList.add('flex');
+          }
+        };
+
+        window.cancelClearHistory = function () {
+          var box = document.getElementById('desktop-clear-confirm');
+          if (box) {
+            box.classList.add('hidden');
+            box.classList.remove('flex');
+          }
+        };
+
+        window.confirmClearHistory = function () {
+          historyItems = [];
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (e) {}
+          window.cancelClearHistory();
+          renderHistory();
+          setExplanation('इतिहास साफ कर दिया गया (History Cleared)');
+        };
+
+        // Display UI Updater
+        function updateDisplayUI(exprText, mainText, explanationText) {
+          var exprEl = document.getElementById('calc-expression');
+          var dispEl = document.getElementById('calc-display');
+          var expEl = document.getElementById('calc-explanation');
+
+          if (exprEl) {
+            var prettyExpr = (exprText || '')
+              .replace(/\*/g, ' × ')
+              .replace(/\//g, ' ÷ ')
+              .replace(/\+/g, ' + ')
+              .replace(/-/g, ' − ');
+            exprEl.innerHTML = prettyExpr ? escapeHtml(prettyExpr) : '&nbsp;';
+          }
+          if (dispEl) {
+            dispEl.textContent = mainText !== undefined && mainText !== '' ? mainText : '0';
+          }
+          if (expEl && explanationText !== undefined) {
+            expEl.textContent = explanationText;
+          }
+        }
+
+        function setExplanation(msg) {
+          var expEl = document.getElementById('calc-explanation');
+          if (expEl) expEl.textContent = msg;
+        }
+
+        // Safe Arithmetic / Scientific Expression Evaluator (No unsafe arbitrary code)
+        function safeEvaluateMath(rawExpr) {
+          if (!rawExpr || !String(rawExpr).trim()) return 0;
+          var cleaned = String(rawExpr)
+            .replace(/×/g, '*')
+            .replace(/÷/g, '/')
+            .replace(/−/g, '-')
+            .replace(/\^/g, '**')
+            .replace(/[^0-9+\-*/().%\s]/g, '');
+
+          // Handle trailing operator gracefully
+          cleaned = cleaned.replace(/[+\-*/.]+$/, '');
+          if (!cleaned) return 0;
+
+          // Transform `A %` at end or standalone `N%` -> `(N/100)`
+          cleaned = cleaned.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+
+          var fn = new Function('return (' + cleaned + ');');
+          var val = fn();
+          if (typeof val !== 'number' || !isFinite(val)) {
+            throw new Error('Invalid math');
+          }
+          return Math.round(val * 100000000) / 100000000;
+        }
+
+        // Standard Keypad Actions
+        window.appendDigit = function (digits) {
+          if (justEvaluated) {
+            expression = '';
+            justEvaluated = false;
+          }
+          if (expression === '0' && digits !== '.') {
+            expression = digits === '00' ? '0' : digits;
+          } else {
+            expression += digits;
+          }
+          previewLiveCalculation();
+        };
+
+        window.appendDecimal = function () {
+          if (justEvaluated) {
+            expression = '0';
+            justEvaluated = false;
+          }
+          var parts = expression.split(/[+\-*/^()]/);
+          var lastPart = parts[parts.length - 1];
+          if (lastPart.indexOf('.') !== -1) return;
+          if (!lastPart) expression += '0';
+          expression += '.';
+          updateDisplayUI(expression, expression, 'दशमलव संख्या');
+        };
+
+        window.appendOperator = function (op) {
+          justEvaluated = false;
+          if (!expression && op === '-') {
+            expression = '-';
+            updateDisplayUI(expression, '-', 'ऋणात्मक संख्या');
+            return;
+          }
+          if (!expression) {
+            expression = '0';
+          }
+          if (/[+\-*/^]$/.test(expression)) {
+            expression = expression.slice(0, -1) + op;
+          } else {
+            expression += op;
+          }
+          updateDisplayUI(expression, currentResult, 'अगली संख्या दर्ज करें');
+        };
+
+        window.appendToken = function (tok) {
+          if (justEvaluated && tok === '(') {
+            expression = '';
+            justEvaluated = false;
+          }
+          expression += tok;
+          previewLiveCalculation();
+        };
+
+        window.clearAll = function () {
+          expression = '';
+          currentResult = '0';
+          justEvaluated = false;
+          updateDisplayUI('', '0', 'साफ कर दिया गया (All Clear)');
+        };
+
+        window.backspace = function () {
+          if (justEvaluated) {
+            justEvaluated = false;
+          }
+          expression = expression.slice(0, -1);
+          if (!expression) {
+            currentResult = '0';
+            updateDisplayUI('', '0', 'संख्या दर्ज करें');
+            return;
+          }
+          previewLiveCalculation();
+        };
+
+        window.handlePercentKey = function () {
+          if (!expression) return;
+          // Support "500 + 18%" or "500 * 18%" or "500%"
+          var matchAddSub = expression.match(/^(.+)([+\-])(\d+(?:\.\d+)?)$/);
+          if (matchAddSub) {
+            try {
+              var baseVal = safeEvaluateMath(matchAddSub[1]);
+              var op = matchAddSub[2];
+              var pct = parseFloat(matchAddSub[3]);
+              var delta = (baseVal * pct) / 100;
+              var finalVal = op === '+' ? baseVal + delta : baseVal - delta;
+              var label = formatIndianNumber(baseVal) + ' ' + op + ' ' + pct + '%';
+              expression = String(finalVal);
+              currentResult = formatIndianNumber(finalVal);
+              justEvaluated = true;
+              updateDisplayUI(label, currentResult, pct + '% = ' + formatIndianNumber(delta));
+              saveHistoryItem(label, finalVal, pct + '% का मान: ' + formatIndianNumber(delta));
+              return;
+            } catch (e) {}
+          }
+          expression += '%';
+          window.calculateEquals();
+        };
+
+        function previewLiveCalculation() {
+          try {
+            if (/^[0-9.]+$/.test(expression)) {
+              currentResult = formatIndianNumber(expression);
+              updateDisplayUI('', currentResult, 'हिसाब जारी है...');
+            } else {
+              var val = safeEvaluateMath(expression);
+              currentResult = formatIndianNumber(val);
+              updateDisplayUI(expression, currentResult, 'बराबर (=) दबाकर सेव करें');
+            }
+          } catch (e) {
+            updateDisplayUI(expression, expression, '');
+          }
+        }
+
+        window.calculateEquals = function () {
+          if (!expression) return;
+          try {
+            var rawExpr = expression;
+            var result = safeEvaluateMath(rawExpr);
+            currentResult = formatIndianNumber(result);
+            var prettyLabel = rawExpr
+              .replace(/\*/g, ' × ')
+              .replace(/\//g, ' ÷ ');
+            updateDisplayUI(prettyLabel + ' =', currentResult, 'उत्तर तैयार है (Saved to History)');
+            saveHistoryItem(prettyLabel, result, 'गणना परिणाम');
+            expression = String(result);
+            justEvaluated = true;
+          } catch (err) {
+            updateDisplayUI(expression, 'त्रुटि (Error)', 'कृपया सही संख्या लिखें');
+          }
+        };
+
+        // Scientific Mode & Functions
+        window.setCalcMode = function (mode) {
+          calcMode = mode;
+          var sciPad = document.getElementById('scientific-pad');
+          var normalBtn = document.getElementById('mode-normal-btn');
+          var sciBtn = document.getElementById('mode-sci-btn');
+          var angleBtn = document.getElementById('angle-unit-btn');
+
+          if (mode === 'scientific') {
+            sciPad.classList.remove('hidden');
+            sciPad.classList.add('grid');
+            angleBtn.classList.remove('hidden');
+            sciBtn.className =
+              'flex-1 sm:flex-initial min-h-[44px] px-4 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors whitespace-nowrap bg-[#ea580c] text-white shadow-sm';
+            normalBtn.className =
+              'flex-1 sm:flex-initial min-h-[44px] px-4 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors whitespace-nowrap text-stone-700 hover:text-stone-900';
+          } else {
+            sciPad.classList.add('hidden');
+            sciPad.classList.remove('grid');
+            angleBtn.classList.add('hidden');
+            normalBtn.className =
+              'flex-1 sm:flex-initial min-h-[44px] px-4 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors whitespace-nowrap bg-[#ea580c] text-white shadow-sm';
+            sciBtn.className =
+              'flex-1 sm:flex-initial min-h-[44px] px-4 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors whitespace-nowrap text-stone-700 hover:text-stone-900';
+          }
+        };
+
+        window.toggleAngleUnit = function () {
+          angleUnit = angleUnit === 'DEG' ? 'RAD' : 'DEG';
+          var btn = document.getElementById('angle-unit-btn');
+          if (btn) btn.textContent = 'कोण: ' + angleUnit;
+        };
+
+        window.insertConstant = function (name) {
+          var val = name === 'pi' ? '3.14159265' : '';
+          if (justEvaluated) {
+            expression = val;
+            justEvaluated = false;
+          } else {
+            expression += val;
+          }
+          previewLiveCalculation();
+        };
+
+        window.applySciFunc = function (fnName) {
+          try {
+            var inputVal = expression ? safeEvaluateMath(expression) : 0;
+            var res = 0;
+            var label = '';
+            var rad = angleUnit === 'DEG' ? (inputVal * Math.PI) / 180 : inputVal;
+
+            if (fnName === 'sin') {
+              res = Math.sin(rad);
+              label = 'sin(' + inputVal + (angleUnit === 'DEG' ? '°' : '') + ')';
+            } else if (fnName === 'cos') {
+              res = Math.cos(rad);
+              label = 'cos(' + inputVal + (angleUnit === 'DEG' ? '°' : '') + ')';
+            } else if (fnName === 'tan') {
+              res = Math.tan(rad);
+              label = 'tan(' + inputVal + (angleUnit === 'DEG' ? '°' : '') + ')';
+            } else if (fnName === 'sqrt') {
+              if (inputVal < 0) throw new Error('Negative sqrt');
+              res = Math.sqrt(inputVal);
+              label = '√(' + inputVal + ')';
+            } else if (fnName === 'sq') {
+              res = inputVal * inputVal;
+              label = '(' + inputVal + ')²';
+            } else if (fnName === 'log') {
+              res = Math.log10(inputVal);
+              label = 'log₁₀(' + inputVal + ')';
+            } else if (fnName === 'ln') {
+              res = Math.log(inputVal);
+              label = 'ln(' + inputVal + ')';
+            } else if (fnName === 'inv') {
+              res = 1 / inputVal;
+              label = '1/(' + inputVal + ')';
+            }
+
+            res = Math.round(res * 100000000) / 100000000;
+            if (!isFinite(res)) throw new Error('Math overflow');
+
+            expression = String(res);
+            currentResult = formatIndianNumber(res);
+            justEvaluated = true;
+            updateDisplayUI(label + ' =', currentResult, 'वैज्ञानिक गणना (Scientific)');
+            saveHistoryItem(label, res, 'वैज्ञानिक गणना');
+          } catch (e) {
+            updateDisplayUI(expression, 'अमान्य (Error)', 'सही संख्या चुनें');
+          }
+        };
+
+        // =========================================================================
+        // ROW 1 LOGIC: GST 18% | GST 5% | Discount%
+        // Formula required: GST = amount + amount * percent / 100
+        // =========================================================================
+        window.handleQuickGST = function (rate) {
+          var baseAmount = 0;
+          try {
+            baseAmount = expression ? safeEvaluateMath(expression) : 0;
+          } catch (e) {
+            baseAmount = 0;
+          }
+
+          if (!baseAmount || baseAmount <= 0) {
+            document.getElementById('gst-rate').value = rate;
+            window.openToolModal('gst');
+            setTimeout(function () {
+              var inp = document.getElementById('gst-amount');
+              if (inp) inp.focus();
+            }, 60);
+            return;
+          }
+
+          applyGstFormulaAndSave(baseAmount, rate);
+        };
+
+        function applyGstFormulaAndSave(baseAmount, rate) {
+          var gstAmount = (baseAmount * rate) / 100;
+          var totalWithGst = baseAmount + gstAmount; // amount + amount*percent/100
+          var cgst = gstAmount / 2;
+
+          expression = String(Math.round(totalWithGst * 100) / 100);
+          currentResult = '₹' + formatIndianNumber(totalWithGst);
+          justEvaluated = true;
+
+          var breakdown =
+            'मूल ₹' +
+            formatIndianNumber(baseAmount) +
+            ' + GST ' +
+            rate +
+            '% (₹' +
+            formatIndianNumber(gstAmount) +
+            ' | CGST ₹' +
+            formatIndianNumber(cgst) +
+            ' + SGST ₹' +
+            formatIndianNumber(cgst) +
+            ')';
+
+          updateDisplayUI('₹' + formatIndianNumber(baseAmount) + ' + ' + rate + '% GST =', currentResult, breakdown);
+          saveHistoryItem('₹' + formatIndianNumber(baseAmount) + ' + GST ' + rate + '%', Math.round(totalWithGst * 100) / 100, breakdown);
+          return { gstAmount: gstAmount, totalWithGst: totalWithGst, cgst: cgst };
+        }
+
+        window.setModalGstRate = function (rate) {
+          document.getElementById('gst-rate').value = rate;
+          window.calculateGstModalTool();
+        };
+
+        window.calculateGstModalTool = function () {
+          var amt = parseFloat(document.getElementById('gst-amount').value);
+          var rate = parseFloat(document.getElementById('gst-rate').value);
+          if (isNaN(amt) || amt <= 0 || isNaN(rate) || rate < 0) return;
+
+          var res = applyGstFormulaAndSave(amt, rate);
+          document.getElementById('gst-result-box').classList.remove('hidden');
+          document.getElementById('gst-final').textContent = '₹' + formatIndianNumber(res.totalWithGst);
+          document.getElementById('gst-added').textContent =
+            'GST ' + rate + '%: ₹' + formatIndianNumber(res.gstAmount) + ' (CGST ₹' + formatIndianNumber(res.cgst) + ' + SGST ₹' + formatIndianNumber(res.cgst) + ')';
+        };
+
+        // =========================================================================
+        // HINDI + HINGLISH + ENGLISH OFFLINE NATURAL LANGUAGE PARSER
+        // Handles: "500 ka atharah percent", "1000 ka 18 percent GST", Devanagari, etc.
+        // =========================================================================
+        var HINDI_WORD_NUMS = {
+          shunya: 0, zero: 0,
+          ek: 1, one: 1, एक: 1,
+          do: 2, two: 2, दो: 2,
+          teen: 3, three: 3, तीन: 3,
+          char: 4, chaar: 4, four: 4, चार: 4,
+          panch: 5, paanch: 5, five: 5, पांच: 5, पाँच: 5,
+          chhah: 6, chhe: 6, che: 6, six: 6, छह: 6, छः: 6,
+          saat: 7, sat: 7, seven: 7, सात: 7,
+          aath: 8, ath: 8, eight: 8, आठ: 8,
+          nau: 9, nine: 9, नौ: 9,
+          das: 10, dus: 10, ten: 10, दस: 10,
+          gyarah: 11, eleven: 11, ग्यारह: 11,
+          barah: 12, baarah: 12, twelve: 12, बारह: 12,
+          terah: 13, thirteen: 13, तेरह: 13,
+          chaudah: 14, fourteen: 14, चौदह: 14,
+          pandrah: 15, fifteen: 15, पंद्रह: 15, पन्द्रह: 15,
+          solah: 16, sixteen: 16, सोलह: 16,
+          satrah: 17, seventeen: 17, सत्रह: 17,
+          atharah: 18, athara: 18, athaarah: 18, eighteen: 18, अठारह: 18, अट्ठारह: 18,
+          unnis: 19, unnees: 19, nineteen: 19, उन्नीस: 19,
+          bees: 20, bis: 20, twenty: 20, बीस: 20,
+          ikkis: 21, इक्कीस: 21,
+          bais: 22, बाईस: 22,
+          teis: 23, तेईस: 23,
+          chaubis: 24, चौबीस: 24,
+          pachis: 25, pacchis: 25, पच्चीस: 25, twentyfive: 25,
+          chhabbis: 26, छब्बीस: 26,
+          sattais: 27, सत्ताईस: 27,
+          atthais: 28, अट्ठाईस: 28,
+          untis: 29, उनतीस: 29,
+          tees: 30, tis: 30, thirty: 30, तीस: 30,
+          ikatthis: 31, इकतीस: 31,
+          battis: 32, बत्तीस: 32,
+          taintis: 33, तैंतीस: 33,
+          chauntis: 34, चौंतीस: 34,
+          paintis: 35, पैंतीस: 35,
+          chhattis: 36, छत्तीस: 36,
+          saintis: 37, सैंतीस: 37,
+          adhtis: 38, artis: 38, अड़तीस: 38,
+          untalis: 39, उनतालीस: 39,
+          chalis: 40, chaalis: 40, forty: 40, चालीस: 40,
+          pachas: 50, pachaas: 50, fifty: 50, पचास: 50,
+          pachpan: 55, पचपन: 55,
+          saath: 60, sath: 60, sixty: 60, साठ: 60,
+          sattar: 70, seventy: 70, सत्तर: 70,
+          pachhattar: 75, पचहत्तर: 75,
+          assi: 80, eighty: 80, अस्सी: 80,
+          nabbe: 90, ninety: 90, नब्बे: 90,
+          aadha: 0.5, आधा: 0.5,
+          dedh: 1.5, डेढ़: 1.5,
+          dhai: 2.5, ढाई: 2.5
+        };
+
+        var MULTIPLIERS = {
+          sau: 100, so: 100, hundred: 100, सौ: 100,
+          hazar: 1000, hazaar: 1000, hajar: 1000, thousand: 1000, हजार: 1000, हज़ार: 1000,
+          lakh: 100000, lac: 100000, लाख: 100000,
+          crore: 10000000, karod: 10000000, करोड़: 10000000
+        };
+
+        function normalizeDevanagariDigits(text) {
+          var devDigits = '०१२३४५६७८९';
+          return String(text).replace(/[०-९]/g, function (ch) {
+            return String(devDigits.indexOf(ch));
+          });
+        }
+
+        // Extract ordered list of numeric values from mixed Hindi/Hinglish/English phrase
+        function extractNumbersFromSpeech(rawText) {
+          var text = normalizeDevanagariDigits(rawText.toLowerCase())
+            .replace(/,/g, '')
+            .replace(/%/g, ' percent ')
+            .replace(/₹|rs\.?|rupaye|rupee|रुपये|रुपए/g, ' ');
+
+          var tokens = text.split(/[\s]+/).filter(Boolean);
+          var extracted = [];
+          var hasActiveGroup = false;
+          var groupTotal = 0;
+          var subChunk = 0;
+
+          function flushGroup() {
+            if (hasActiveGroup) {
+              extracted.push(groupTotal + subChunk);
+              hasActiveGroup = false;
+              groupTotal = 0;
+              subChunk = 0;
+            }
+          }
+
+          for (var i = 0; i < tokens.length; i++) {
+            var tok = tokens[i].replace(/^[^\w\u0900-\u097F.]+|[^\w\u0900-\u097F.]+$/g, '');
+            if (!tok) continue;
+
+            // Direct digits
+            if (/^\d+(?:\.\d+)?$/.test(tok)) {
+              var numVal = parseFloat(tok);
+              var nextTok = i + 1 < tokens.length ? tokens[i + 1].replace(/^[^\w\u0900-\u097F]+|[^\w\u0900-\u097F]+$/g, '') : '';
+              if (MULTIPLIERS[nextTok]) {
+                hasActiveGroup = true;
+                var mVal = MULTIPLIERS[nextTok];
+                if (mVal >= 1000) {
+                  groupTotal += numVal * mVal;
+                } else {
+                  subChunk += numVal * mVal;
+                }
+                i++;
+              } else {
+                flushGroup();
+                extracted.push(numVal);
+              }
+              continue;
+            }
+
+            if (HINDI_WORD_NUMS[tok] !== undefined) {
+              hasActiveGroup = true;
+              subChunk += HINDI_WORD_NUMS[tok];
+              continue;
+            }
+
+            if (MULTIPLIERS[tok] !== undefined) {
+              hasActiveGroup = true;
+              var mult = MULTIPLIERS[tok];
+              var base = subChunk > 0 ? subChunk : 1;
+              if (mult >= 1000) {
+                groupTotal += base * mult;
+                subChunk = 0;
+              } else {
+                subChunk = base * mult;
+              }
+              continue;
+            }
+
+            // Non-numeric separator token ("ka", "par", "plus", "gst", etc.)
+            flushGroup();
+          }
+
+          flushGroup();
+          return extracted;
+        }
+
+        var autoSpeakTimer = null;
+
+        function buildHindiResultSpeech(rawDisplay) {
+          var text = String(rawDisplay || '0').trim();
+          var hasRupee = text.indexOf('₹') !== -1;
+          var hasSqFt = /sq\.?\s*ft/i.test(text);
+          var hasBighaUnit = /bigha|बीघा/i.test(text);
+
+          // Remove commas so TTS reads full numbers instead of "comma"
+          var cleaned = text
+            .replace(/,/g, '')
+            .replace(/₹/g, '')
+            .replace(/sq\.?\s*ft/gi, '')
+            .replace(/bigha|बीघा/gi, '')
+            .replace(/−/g, '-')
+            .trim();
+
+          if (/^-\s*\d/.test(cleaned)) {
+            cleaned = 'ऋण ' + cleaned.replace(/^-\s*/, '');
+          }
+
+          if (hasRupee) {
+            return 'उत्तर है ' + cleaned + ' रुपये';
+          }
+          if (hasSqFt) {
+            return 'उत्तर है ' + cleaned + ' वर्ग फुट';
+          }
+          if (hasBighaUnit) {
+            return 'उत्तर है ' + cleaned + ' बीघा';
+          }
+          return 'उत्तर है ' + cleaned;
+        }
+
+        // Offline Text-to-Speech (Listen to Result & Auto-Announce for Elderly Users)
+        window.speakCurrentResult = function (customHindiText, isAutoAnnounce) {
+          if (!('speechSynthesis' in window)) {
+            if (!isAutoAnnounce) {
+              setExplanation('ऑडियो स्पीकर इस ब्राउज़र में उपलब्ध नहीं है');
+            }
+            return;
+          }
+
+          if (autoSpeakTimer) {
+            clearTimeout(autoSpeakTimer);
+            autoSpeakTimer = null;
+          }
+
+          var phraseToSpeak = customHindiText
+            ? String(customHindiText).replace(/,/g, '')
+            : buildHindiResultSpeech(currentResult);
+
+          var delay = isAutoAnnounce ? 180 : 0;
+          autoSpeakTimer = setTimeout(function () {
+            try {
+              window.speechSynthesis.cancel();
+              var utter = new SpeechSynthesisUtterance(phraseToSpeak);
+              utter.lang = 'hi-IN';
+              utter.rate = 0.88; // Clear, unhurried pace for elderly users
+              utter.pitch = 1.0;
+
+              var voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+              for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang && voices[i].lang.toLowerCase().indexOf('hi') === 0) {
+                  utter.voice = voices[i];
+                  break;
+                }
+              }
+
+              window.speechSynthesis.speak(utter);
+            } catch (e) {
+              // Ignore TTS synthesis errors silently during auto-announce
+            }
+          }, delay);
+        };
+
+        window.runSmartTextCommand = function (spokenText, shouldAutoSpeak) {
+          var raw = String(spokenText || '').trim();
+          if (!raw) {
+            setExplanation('कृपया माइक में बोलें या बॉक्स में लिखें');
+            return;
+          }
+
+          // Default auto-speak to true whenever a voice/smart command is parsed
+          var announce = shouldAutoSpeak !== false;
+
+          var inputBox = document.getElementById('voice-text-input');
+          if (inputBox) inputBox.value = raw;
+
+          var lower = normalizeDevanagariDigits(raw.toLowerCase());
+          var nums = extractNumbersFromSpeech(raw);
+
+          var hasGST = /\bgst\b|जीएसटी|टैक्स|tax/.test(lower);
+          var hasDiscount = /discount|chhut|chhoot|छूट|डिस्काउंट|less/.test(lower);
+          var hasPercent = /percent|pratishat|%|परसेंट|प्रतिशत|फीसदी/.test(lower);
+          var hasKa = /\bka\b|\bki\b|\bke\b|\bof\b|\bpar\b|का|की|के|पर/.test(lower);
+          var hasBigha = /bigha|बीघा/.test(lower);
+          var hasSqFtWord = /sq\.?\s*ft|square\s*feet|square\s*foot|वर्ग\s*फुट|स्क्वायर\s*फीट/.test(lower);
+
+          // 1. Bidirectional Bigha <-> SqFt voice shortcut
+          if (hasBigha && nums.length >= 1) {
+            var valNum = nums[0];
+            var isSqFtToBigha =
+              (hasSqFtWord && lower.indexOf('bigha') > lower.search(/sq|square|वर्ग|स्क्वायर/)) ||
+              (hasSqFtWord && lower.indexOf('बीघा') > lower.search(/sq|square|वर्ग|स्क्वायर/)) ||
+              valNum >= 1000;
+
+            if (isSqFtToBigha) {
+              var bighaOut = Math.round((valNum / 27225) * 10000) / 10000;
+              expression = String(bighaOut);
+              currentResult = formatIndianNumber(bighaOut) + ' Bigha';
+              justEvaluated = true;
+              updateDisplayUI(raw, currentResult, formatIndianNumber(valNum) + ' वर्ग फुट = ' + formatIndianNumber(bighaOut) + ' पक्का बीघा');
+              saveHistoryItem(formatIndianNumber(valNum) + ' Sq.Ft → बीघा', bighaOut, 'पक्का बीघा (27,225 वर्ग फुट)');
+              if (announce) {
+                window.speakCurrentResult(valNum + ' वर्ग फुट बराबर ' + bighaOut + ' बीघा', true);
+              }
+              return;
+            } else {
+              var sqft = Math.round(valNum * 27225 * 100) / 100;
+              expression = String(sqft);
+              currentResult = formatIndianNumber(sqft) + ' Sq.Ft';
+              justEvaluated = true;
+              updateDisplayUI(raw, currentResult, valNum + ' पक्का बीघा = ' + formatIndianNumber(sqft) + ' वर्ग फुट');
+              saveHistoryItem(valNum + ' बीघा → Sq.Ft', sqft, 'पक्का बीघा (27,225 वर्ग फुट)');
+              if (announce) {
+                window.speakCurrentResult(valNum + ' बीघा बराबर ' + sqft + ' वर्ग फुट', true);
+              }
+              return;
+            }
+          }
+
+          // 2. GST Voice Calculation: amount + amount * percent / 100
+          if (hasGST && nums.length >= 1) {
+            var baseAmt = nums[0];
+            var gstRate = nums.length >= 2 ? nums[1] : 18;
+            var gstVal = (baseAmt * gstRate) / 100;
+            var totalAmt = Math.round((baseAmt + gstVal) * 100) / 100;
+
+            expression = String(totalAmt);
+            currentResult = '₹' + formatIndianNumber(totalAmt);
+            justEvaluated = true;
+            var gstDesc =
+              'मूल ₹' + formatIndianNumber(baseAmt) + ' + ' + gstRate + '% GST (₹' + formatIndianNumber(gstVal) + ')';
+            updateDisplayUI('"' + raw + '"', currentResult, gstDesc);
+            saveHistoryItem(raw + ' (GST)', totalAmt, gstDesc);
+            if (announce) {
+              window.speakCurrentResult('जीएसटी मिलाकर कुल उत्तर है ' + totalAmt + ' रुपये', true);
+            }
+            return;
+          }
+
+          // 3. Discount Voice Calculation
+          if (hasDiscount && nums.length >= 2) {
+            var mrp = nums[0];
+            var discPct = nums[1];
+            var discSaved = (mrp * discPct) / 100;
+            var finalPay = Math.round((mrp - discSaved) * 100) / 100;
+
+            expression = String(finalPay);
+            currentResult = '₹' + formatIndianNumber(finalPay);
+            justEvaluated = true;
+            var discDesc = 'छूट ' + discPct + '% (−₹' + formatIndianNumber(discSaved) + ')';
+            updateDisplayUI('"' + raw + '"', currentResult, discDesc);
+            saveHistoryItem(raw + ' (छूट)', finalPay, discDesc);
+            if (announce) {
+              window.speakCurrentResult('छूट के बाद कुल उत्तर है ' + finalPay + ' रुपये', true);
+            }
+            return;
+          }
+
+          // 4. Percentage / "ka" Calculation (e.g., "500 ka atharah percent" -> 90)
+          if ((hasPercent || hasKa) && nums.length >= 2) {
+            var amount = nums[0];
+            var pctVal = nums[1];
+            var calcPct = Math.round(((amount * pctVal) / 100) * 10000) / 10000;
+
+            expression = String(calcPct);
+            currentResult = formatIndianNumber(calcPct);
+            justEvaluated = true;
+            var pctDesc = formatIndianNumber(amount) + ' का ' + pctVal + '% = ' + currentResult;
+            updateDisplayUI('"' + raw + '"', currentResult, pctDesc);
+            saveHistoryItem(formatIndianNumber(amount) + ' का ' + pctVal + '%', calcPct, 'आवाज़ से प्रतिशत हिसाब');
+            if (announce) {
+              window.speakCurrentResult(amount + ' का ' + pctVal + ' प्रतिशत बराबर ' + calcPct, true);
+            }
+            return;
+          }
+
+          // 5. Spoken Basic Arithmetic (plus/jama, minus/ghata, guna/into, bhag/divide)
+          if (nums.length >= 2) {
+            var a = nums[0];
+            var b = nums[1];
+            var opRes = null;
+            var opSym = '';
+
+            if (/plus|jama|jod|add|\+|जमा|जोड़|और/.test(lower)) {
+              opRes = a + b;
+              opSym = '+';
+            } else if (/minus|ghata|kam|less|\-|घटा|कम|माइनस/.test(lower)) {
+              opRes = a - b;
+              opSym = '−';
+            } else if (/into|guna|multiply|times|\*|x|गुणा|इंटू/.test(lower)) {
+              opRes = a * b;
+              opSym = '×';
+            } else if (/divide|bhag|by|\/|भाग|बटा/.test(lower)) {
+              opRes = b !== 0 ? a / b : NaN;
+              opSym = '÷';
+            }
+
+            if (opRes !== null && isFinite(opRes)) {
+              var roundedOpRes = Math.round(opRes * 10000) / 10000;
+              expression = String(roundedOpRes);
+              currentResult = formatIndianNumber(roundedOpRes);
+              justEvaluated = true;
+              var label = formatIndianNumber(a) + ' ' + opSym + ' ' + formatIndianNumber(b);
+              updateDisplayUI('"' + raw + '"', currentResult, label + ' = ' + currentResult);
+              saveHistoryItem(label, roundedOpRes, 'बोलकर किया गया हिसाब');
+              if (announce) {
+                window.speakCurrentResult('उत्तर है ' + roundedOpRes, true);
+              }
+              return;
+            }
+          }
+
+          // 6. Direct Mathematical Expression Fallback (e.g., "500*18/100")
+          try {
+            var directVal = safeEvaluateMath(lower);
+            expression = String(directVal);
+            currentResult = formatIndianNumber(directVal);
+            justEvaluated = true;
+            updateDisplayUI(raw + ' =', currentResult, 'उत्तर तैयार है');
+            saveHistoryItem(raw, directVal, 'स्मार्ट गणना');
+            if (announce) {
+              window.speakCurrentResult('उत्तर है ' + directVal, true);
+            }
+          } catch (e) {
+            if (nums.length === 1) {
+              expression = String(nums[0]);
+              currentResult = formatIndianNumber(nums[0]);
+              updateDisplayUI(raw, currentResult, 'संख्या दर्ज की गई');
+              if (announce) {
+                window.speakCurrentResult('संख्या है ' + nums[0], true);
+              }
+            } else {
+              setExplanation('समझ नहीं आया — ऐसे बोलें: "500 ka atharah percent"');
+            }
+          }
+        };
+
+        // =========================================================================
+        // VOICE RECOGNITION (webkitSpeechRecognition + SpeechRecognition)
+        // =========================================================================
+        window.setVoiceLang = function (lang) {
+          voiceLang = lang;
+          var hiBtn = document.getElementById('lang-hi-btn');
+          var enBtn = document.getElementById('lang-en-btn');
+          if (lang === 'hi-IN') {
+            hiBtn.className =
+              'min-h-[44px] px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap bg-[#ffedd5] text-[#9a3412]';
+            enBtn.className =
+              'min-h-[44px] px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap text-stone-600 hover:text-stone-900';
+          } else {
+            enBtn.className =
+              'min-h-[44px] px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap bg-[#ffedd5] text-[#9a3412]';
+            hiBtn.className =
+              'min-h-[44px] px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap text-stone-600 hover:text-stone-900';
+          }
+        };
+
+        window.toggleVoiceRecognition = function () {
+          var SpeechRec = window.webkitSpeechRecognition || window.SpeechRecognition;
+          if (!SpeechRec) {
+            setExplanation('इस ब्राउज़र में माइक उपलब्ध नहीं है — कृपया नीचे बॉक्स में लिखें');
+            var inputEl = document.getElementById('voice-text-input');
+            if (inputEl) inputEl.focus();
+            return;
+          }
+
+          if (isListening && recognition) {
+            recognition.stop();
+            return;
+          }
+
+          // Cancel any ongoing speech before opening microphone
+          if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+          }
+
+          recognition = new SpeechRec();
+          recognition.lang = voiceLang;
+          recognition.interimResults = false;
+          recognition.maxAlternatives = 1;
+
+          var micBtn = document.getElementById('voice-mic-btn');
+          var micWrap = document.getElementById('mic-icon-wrap');
+          var btnLabel = document.getElementById('voice-btn-label');
+
+          recognition.onstart = function () {
+            isListening = true;
+            if (micWrap) micWrap.classList.add('listening-ring');
+            if (micBtn) micBtn.classList.replace('bg-[#ea580c]', 'bg-red-600');
+            if (btnLabel) btnLabel.textContent = 'सुन रहे हैं... अब बोलिए (Listening...)';
+            setExplanation('माइक चालू है — बोलिए जैसे "500 ka atharah percent"');
+          };
+
+          recognition.onresult = function (event) {
+            if (event.results && event.results[0] && event.results[0][0]) {
+              var transcript = event.results[0][0].transcript;
+              window.runSmartTextCommand(transcript, true);
+            }
+          };
+
+          recognition.onerror = function (event) {
+            var errMsg = 'आवाज़ स्पष्ट नहीं आई — दोबारा दबाकर बोलें या टाइप करें';
+            if (event.error === 'not-allowed') {
+              errMsg = 'माइक की अनुमति (Microphone Permission) चालू करें या नीचे टाइप करें';
+            }
+            setExplanation(errMsg);
+          };
+
+          recognition.onend = function () {
+            isListening = false;
+            if (micWrap) micWrap.classList.remove('listening-ring');
+            if (micBtn) micBtn.classList.replace('bg-red-600', 'bg-[#ea580c]');
+            if (btnLabel) btnLabel.textContent = 'बोलकर हिसाब करें (Tap to Speak)';
+          };
+
+          try {
+            recognition.start();
+          } catch (e) {
+            setExplanation('माइक शुरू करने में समस्या — नीचे बॉक्स में लिखकर हिसाब करें');
+          }
+        };
+
+        // =========================================================================
+        // EXTRA ROW 1, 2 & 3 MODALS: Discount, Age, Bigha->SqFt, Loan EMI, History
+        // =========================================================================
+        window.openToolModal = function (toolName) {
+          var modal = document.getElementById('tool-modal');
+          var titleEl = document.getElementById('tool-modal-title');
+          var panels = document.querySelectorAll('.tool-panel');
+          panels.forEach(function (p) {
+            p.classList.add('hidden');
+          });
+
+          // Pre-fill current positive calculator value into active tool for convenience
+          var activeNum = 0;
+          try {
+            activeNum = expression ? safeEvaluateMath(expression) : 0;
+          } catch (e) {
+            activeNum = 0;
+          }
+
+          if (toolName === 'gst') {
+            titleEl.textContent = 'जीएसटी कैलकुलेटर (GST Calculator)';
+            document.getElementById('panel-gst').classList.remove('hidden');
+            if (activeNum > 0) document.getElementById('gst-amount').value = activeNum;
+          } else if (toolName === 'discount') {
+            titleEl.textContent = 'छूट कैलकुलेटर (Discount %)';
+            document.getElementById('panel-discount').classList.remove('hidden');
+            if (activeNum > 0) document.getElementById('disc-price').value = activeNum;
+          } else if (toolName === 'age') {
+            titleEl.textContent = 'उम्र कैलकुलेटर (Age Calculator)';
+            document.getElementById('panel-age').classList.remove('hidden');
+            var targetInput = document.getElementById('age-target');
+            if (!targetInput.value) {
+              targetInput.value = new Date().toISOString().split('T')[0];
+            }
+          } else if (toolName === 'bigha') {
+            document.getElementById('panel-bigha').classList.remove('hidden');
+            if (activeNum >= 1000) {
+              window.setBighaDirection('sqft_to_bigha', activeNum);
+            } else {
+              window.setBighaDirection('bigha_to_sqft', activeNum > 0 ? activeNum : undefined);
+            }
+          } else if (toolName === 'emi') {
+            titleEl.textContent = 'लोन किस्त कैलकुलेटर (Loan EMI)';
+            document.getElementById('panel-emi').classList.remove('hidden');
+            if (activeNum >= 1000) {
+              document.getElementById('emi-principal').value = activeNum;
+            }
+          } else if (toolName === 'privacy') {
+            window.showPrivacyDialog();
+            return;
+          }
+
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        };
+
+        window.closeToolModal = function () {
+          var modal = document.getElementById('tool-modal');
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        };
+
+        window.showPrivacyDialog = function () {
+          var dlg = document.getElementById('privacy-dialog');
+          if (dlg) {
+            dlg.classList.remove('hidden');
+            dlg.classList.add('flex');
+          }
+        };
+
+        window.closePrivacyDialog = function () {
+          var dlg = document.getElementById('privacy-dialog');
+          if (dlg) {
+            dlg.classList.add('hidden');
+            dlg.classList.remove('flex');
+          }
+        };
+
+        window.openHistoryDrawer = function () {
+          var modal = document.getElementById('history-modal');
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        };
+
+        window.closeHistoryDrawer = function () {
+          var modal = document.getElementById('history-modal');
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        };
+
+        // Tool 1: Discount Calculator
+        window.setQuickDiscount = function (pct) {
+          document.getElementById('disc-rate').value = pct;
+          window.calculateDiscountTool();
+        };
+
+        window.calculateDiscountTool = function () {
+          var price = parseFloat(document.getElementById('disc-price').value);
+          var rate = parseFloat(document.getElementById('disc-rate').value);
+          if (isNaN(price) || price <= 0 || isNaN(rate) || rate < 0) {
+            return;
+          }
+          var saved = (price * rate) / 100;
+          var finalAmt = price - saved;
+
+          document.getElementById('disc-result-box').classList.remove('hidden');
+          document.getElementById('disc-final').textContent = '₹' + formatIndianNumber(finalAmt);
+          document.getElementById('disc-saved').textContent =
+            'कुल बचत (You Save): ₹' + formatIndianNumber(saved) + ' (' + rate + '%)';
+
+          expression = String(Math.round(finalAmt * 100) / 100);
+          currentResult = '₹' + formatIndianNumber(finalAmt);
+          justEvaluated = true;
+          updateDisplayUI(
+            'MRP ₹' + formatIndianNumber(price) + ' − ' + rate + '% छूट =',
+            currentResult,
+            'बचत: ₹' + formatIndianNumber(saved)
+          );
+          saveHistoryItem(
+            '₹' + formatIndianNumber(price) + ' पर ' + rate + '% छूट',
+            Math.round(finalAmt * 100) / 100,
+            'बचत ₹' + formatIndianNumber(saved)
+          );
+        };
+
+        // Tool 2: Age Calculator (DOB input to exact Years, Months, Days)
+        window.calculateAgeTool = function () {
+          var dobStr = document.getElementById('age-dob').value;
+          var targetStr = document.getElementById('age-target').value;
+          if (!dobStr) return;
+
+          var dob = new Date(dobStr + 'T00:00:00');
+          var target = targetStr ? new Date(targetStr + 'T00:00:00') : new Date();
+
+          if (dob > target) {
+            document.getElementById('age-result-box').classList.remove('hidden');
+            document.getElementById('age-main-output').textContent = 'जन्म तिथि आज से पहले की चुनें';
+            document.getElementById('age-extra-output').textContent = '';
+            return;
+          }
+
+          var years = target.getFullYear() - dob.getFullYear();
+          var months = target.getMonth() - dob.getMonth();
+          var days = target.getDate() - dob.getDate();
+
+          if (days < 0) {
+            months -= 1;
+            var prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+            days += prevMonth.getDate();
+          }
+          if (months < 0) {
+            years -= 1;
+            months += 12;
+          }
+
+          var totalDays = Math.floor((target - dob) / (1000 * 60 * 60 * 24));
+          var ageSummary = years + ' वर्ष, ' + months + ' महीने, ' + days + ' दिन';
+
+          document.getElementById('age-result-box').classList.remove('hidden');
+          document.getElementById('age-main-output').textContent = ageSummary;
+          document.getElementById('age-extra-output').textContent =
+            'कुल दिन: ' + formatIndianNumber(totalDays) + ' दिन · (' + years + ' Years, ' + months + ' Months, ' + days + ' Days)';
+
+          currentResult = years + ' वर्ष ' + months + ' माह';
+          updateDisplayUI('जन्म तिथि: ' + dobStr, currentResult, ageSummary);
+          saveHistoryItem('उम्र (' + dobStr + ')', ageSummary, 'कुल ' + formatIndianNumber(totalDays) + ' दिन');
+        };
+
+        // Tool 3: Bidirectional Bigha <-> SqFt Converter
+        var bighaDirection = 'bigha_to_sqft';
+
+        window.setBighaDirection = function (dir, overrideValue) {
+          bighaDirection = dir === 'sqft_to_bigha' ? 'sqft_to_bigha' : 'bigha_to_sqft';
+
+          var btnB2S = document.getElementById('mode-bigha-to-sqft');
+          var btnS2B = document.getElementById('mode-sqft-to-bigha');
+          var inputLabel = document.getElementById('bigha-input-label');
+          var inputEl = document.getElementById('bigha-input');
+          var convertBtn = document.getElementById('bigha-convert-btn');
+          var captionEl = document.getElementById('bigha-result-caption');
+          var titleEl = document.getElementById('tool-modal-title');
+          var sqFtPerBigha = parseFloat(document.getElementById('bigha-region').value) || 27225;
+
+          var activeClass =
+            'min-h-[48px] px-3 py-2 rounded-xl text-sm sm:text-base font-extrabold transition-colors whitespace-nowrap bg-[#ea580c] text-white shadow-sm calc-btn';
+          var inactiveClass =
+            'min-h-[48px] px-3 py-2 rounded-xl text-sm sm:text-base font-extrabold transition-colors whitespace-nowrap text-stone-700 hover:text-stone-900 calc-btn';
+
+          if (bighaDirection === 'sqft_to_bigha') {
+            btnB2S.className = inactiveClass;
+            btnS2B.className = activeClass;
+            if (titleEl && !document.getElementById('panel-bigha').classList.contains('hidden')) {
+              titleEl.textContent = 'वर्ग फुट से बीघा (SqFt to Bigha)';
+            }
+            inputLabel.textContent = 'वर्ग फुट दर्ज करें (Enter Area in Sq.Ft)';
+            inputEl.placeholder = 'उदा. ' + sqFtPerBigha;
+            convertBtn.textContent = 'बीघा में बदलें (Convert to Bigha)';
+            captionEl.textContent = 'कुल बीघा (Total Bigha):';
+
+            if (overrideValue !== undefined) {
+              inputEl.value = overrideValue;
+            } else {
+              var curVal = parseFloat(inputEl.value);
+              if (!curVal || curVal <= 50) {
+                inputEl.value = (curVal > 0 ? curVal : 1) * sqFtPerBigha;
+              }
+            }
+          } else {
+            btnB2S.className = activeClass;
+            btnS2B.className = inactiveClass;
+            if (titleEl && !document.getElementById('panel-bigha').classList.contains('hidden')) {
+              titleEl.textContent = 'बीघा से वर्ग फुट (Bigha to SqFt)';
+            }
+            inputLabel.textContent = 'बीघा की संख्या (Enter Bigha)';
+            inputEl.placeholder = 'उदा. 2.5';
+            convertBtn.textContent = 'वर्ग फुट में बदलें (Convert to Sq.Ft)';
+            captionEl.textContent = 'कुल क्षेत्रफल (Total Area in Sq.Ft):';
+
+            if (overrideValue !== undefined) {
+              inputEl.value = overrideValue;
+            } else {
+              var curSq = parseFloat(inputEl.value);
+              if (curSq >= 500) {
+                inputEl.value = Math.round((curSq / sqFtPerBigha) * 10000) / 10000;
+              } else if (!curSq) {
+                inputEl.value = 1;
+              }
+            }
+          }
+
+          window.calculateBighaTool(false);
+        };
+
+        window.calculateBighaTool = function (shouldSave) {
+          var sqFtPerBigha = parseFloat(document.getElementById('bigha-region').value) || 27225;
+          var inputVal = parseFloat(document.getElementById('bigha-input').value);
+          if (isNaN(inputVal) || inputVal < 0) return;
+
+          if (bighaDirection === 'sqft_to_bigha') {
+            var totalBigha = inputVal / sqFtPerBigha;
+            var roundedBigha = Math.round(totalBigha * 10000) / 10000;
+            var wholeBigha = Math.floor(totalBigha + 1e-9);
+            var remBiswa = Math.max(0, (totalBigha - wholeBigha) * 20);
+            var sqYardsFromSqFt = inputVal / 9;
+            var acresFromSqFt = inputVal / 43560;
+
+            document.getElementById('bigha-sqft-output').textContent = formatIndianNumber(roundedBigha) + ' बीघा (Bigha)';
+            document.getElementById('bigha-other-units').textContent =
+              wholeBigha +
+              ' बीघा ' +
+              formatIndianNumber(Math.round(remBiswa * 100) / 100) +
+              ' बिस्वा · ' +
+              formatIndianNumber(sqYardsFromSqFt) +
+              ' गज · ' +
+              formatIndianNumber(acresFromSqFt) +
+              ' एकड़';
+
+            if (shouldSave) {
+              expression = String(roundedBigha);
+              currentResult = formatIndianNumber(roundedBigha) + ' Bigha';
+              justEvaluated = true;
+              updateDisplayUI(
+                formatIndianNumber(inputVal) + ' Sq.Ft ÷ ' + formatIndianNumber(sqFtPerBigha) + ' =',
+                currentResult,
+                wholeBigha +
+                  ' बीघा ' +
+                  formatIndianNumber(Math.round(remBiswa * 100) / 100) +
+                  ' बिस्वा · ' +
+                  formatIndianNumber(sqYardsFromSqFt) +
+                  ' गज'
+              );
+              saveHistoryItem(
+                formatIndianNumber(inputVal) + ' वर्ग फुट → बीघा',
+                roundedBigha,
+                wholeBigha + ' बीघा ' + formatIndianNumber(Math.round(remBiswa * 100) / 100) + ' बिस्वा (' + formatIndianNumber(sqFtPerBigha) + ' SqFt/बीघा)'
+              );
+            }
+          } else {
+            var totalSqFt = inputVal * sqFtPerBigha;
+            var sqYardsGaj = totalSqFt / 9;
+            var acres = totalSqFt / 43560;
+            var roundedSqFt = Math.round(totalSqFt * 100) / 100;
+
+            document.getElementById('bigha-sqft-output').textContent = formatIndianNumber(roundedSqFt) + ' वर्ग फुट (Sq.Ft)';
+            document.getElementById('bigha-other-units').textContent =
+              formatIndianNumber(sqYardsGaj) + ' गज (Sq.Yd) · ' + formatIndianNumber(acres) + ' एकड़ (Acre)';
+
+            if (shouldSave) {
+              expression = String(roundedSqFt);
+              currentResult = formatIndianNumber(roundedSqFt) + ' Sq.Ft';
+              justEvaluated = true;
+              updateDisplayUI(
+                inputVal + ' बीघा × ' + formatIndianNumber(sqFtPerBigha) + ' =',
+                currentResult,
+                formatIndianNumber(sqYardsGaj) + ' गज · ' + formatIndianNumber(acres) + ' एकड़'
+              );
+              saveHistoryItem(
+                inputVal + ' बीघा → वर्ग फुट',
+                roundedSqFt,
+                formatIndianNumber(sqYardsGaj) + ' गज (' + formatIndianNumber(sqFtPerBigha) + ' SqFt/बीघा)'
+              );
+            }
+          }
+        };
+
+        // Tool 4: Loan EMI Calculator
+        window.calculateEMITool = function () {
+          var P = parseFloat(document.getElementById('emi-principal').value);
+          var annualRate = parseFloat(document.getElementById('emi-rate').value);
+          var N = parseInt(document.getElementById('emi-months').value, 10);
+
+          if (isNaN(P) || P <= 0 || isNaN(annualRate) || annualRate < 0 || isNaN(N) || N <= 0) {
+            return;
+          }
+
+          var emi = 0;
+          if (annualRate === 0) {
+            emi = P / N;
+          } else {
+            var r = annualRate / 12 / 100;
+            var factor = Math.pow(1 + r, N);
+            emi = (P * r * factor) / (factor - 1);
+          }
+
+          var totalPayable = emi * N;
+          var totalInterest = totalPayable - P;
+          var roundedEmi = Math.round(emi);
+
+          document.getElementById('emi-result-box').classList.remove('hidden');
+          document.getElementById('emi-monthly').textContent = '₹' + formatIndianNumber(roundedEmi) + ' / महीना';
+          document.getElementById('emi-breakdown').textContent =
+            'कुल ब्याज: ₹' +
+            formatIndianNumber(Math.round(totalInterest)) +
+            ' · कुल भुगतान: ₹' +
+            formatIndianNumber(Math.round(totalPayable));
+
+          expression = String(roundedEmi);
+          currentResult = '₹' + formatIndianNumber(roundedEmi);
+          justEvaluated = true;
+          updateDisplayUI(
+            'लोन ₹' + formatIndianNumber(P) + ' (' + annualRate + '%, ' + N + ' माह)',
+            currentResult,
+            'मासिक किस्त (EMI) · कुल ब्याज ₹' + formatIndianNumber(Math.round(totalInterest))
+          );
+          saveHistoryItem(
+            'लोन EMI (₹' + formatIndianNumber(P) + ', ' + N + 'm)',
+            roundedEmi,
+            'ब्याज ' + annualRate + '% · कुल ₹' + formatIndianNumber(Math.round(totalPayable))
+          );
+        };
+
+        // Keyboard Support for Desktop Convenience
+        document.addEventListener('keydown', function (e) {
+          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+            if (e.key === 'Escape') {
+              window.closeToolModal();
+              window.closeHistoryDrawer();
+            }
+            return;
+          }
+          if (e.key >= '0' && e.key <= '9') {
+            window.appendDigit(e.key);
+          } else if (e.key === '.') {
+            window.appendDecimal();
+          } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+            window.appendOperator(e.key);
+          } else if (e.key === 'Enter' || e.key === '=') {
+            e.preventDefault();
+            window.calculateEquals();
+          } else if (e.key === 'Backspace') {
+            window.backspace();
+          } else if (e.key === 'Escape') {
+            window.closeToolModal();
+            window.closeHistoryDrawer();
+            window.closePrivacyDialog();
+          }
+        });
+
+        // Close modals on backdrop click
+        document.getElementById('tool-modal').addEventListener('click', function (e) {
+          if (e.target === this) window.closeToolModal();
+        });
+        document.getElementById('history-modal').addEventListener('click', function (e) {
+          if (e.target === this) window.closeHistoryDrawer();
+        });
+        document.getElementById('privacy-dialog').addEventListener('click', function (e) {
+          if (e.target === this) window.closePrivacyDialog();
+        });
+
+        // Initialize Default DOB (e.g. 60 years ago convenience placeholder) & History
+        var defaultDob = new Date();
+        defaultDob.setFullYear(defaultDob.getFullYear() - 55);
+        document.getElementById('age-dob').value = defaultDob.toISOString().split('T')[0];
+        document.getElementById('age-target').value = new Date().toISOString().split('T')[0];
+
+        loadHistory();
+      })();
+    </script>
+    <!-- FIXED GOOGLE ADMOB BANNER AD - Positioned directly above the footer (height 60px) -->
+    <div
+      id="ad-banner"
+      data-admob-app-id="ca-app-pub-4132634485810878~7856856901"
+      data-admob-banner-id="ca-app-pub-4132634485810878/6060771539"
+      style="position:fixed; bottom:28px; left:0; right:0; height:60px; background:#FFF7ED; border-top:2px solid #F97316; display:flex; align-items:center; justify-content:center; z-index:99999; font-size:13px; color:#9CA3AF; overflow:hidden;"
+    >
+      <ins
+        class="adsbygoogle"
+        style="display:inline-block; width:320px; height:50px;"
+        data-ad-client="ca-app-pub-4132634485810878"
+        data-ad-slot="6060771539"
+      ></ins>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        var ADMOB_CONFIG = {
+          appId: 'ca-app-pub-4132634485810878~7856856901',
+          bannerId: 'ca-app-pub-4132634485810878/6060771539'
+        };
+        window.ADMOB_CONFIG = ADMOB_CONFIG;
+
+        function initPlayStoreAdMob() {
+          try {
+            // 1. Android WebView JavascriptInterface bridge (if wrapped in custom Android AAB)
+            if (window.AndroidAdMob && typeof window.AndroidAdMob.loadBanner === 'function') {
+              window.AndroidAdMob.loadBanner(ADMOB_CONFIG.appId, ADMOB_CONFIG.bannerId);
+              return;
+            }
+
+            // 2. Capacitor AdMob plugin (@capacitor-community/admob)
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+              var capAdMob = window.Capacitor.Plugins.AdMob;
+              capAdMob.initialize({ initializeForTesting: false }).then(function () {
+                capAdMob.showBanner({
+                  adId: ADMOB_CONFIG.bannerId,
+                  adSize: 'BANNER',
+                  position: 'BOTTOM_CENTER',
+                  margin: 28
+                });
+              }).catch(function () {});
+              return;
+            }
+
+            // 3. Cordova AdMob Plus / Cordova AdMob plugin
+            if (window.admob && window.admob.BannerAd) {
+              var banner = new window.admob.BannerAd({
+                adUnitId: ADMOB_CONFIG.bannerId,
+                position: 'bottom',
+                offset: 28
+              });
+              banner.show().catch(function () {});
+              return;
+            }
+            if (window.AdMob && typeof window.AdMob.createBanner === 'function') {
+              window.AdMob.createBanner({
+                adId: ADMOB_CONFIG.bannerId,
+                position: window.AdMob.AD_POSITION ? window.AdMob.AD_POSITION.BOTTOM_CENTER : 8,
+                autoShow: true
+              });
+              return;
+            }
+
+            // 4. Online WebView / H5 AdSense fallback (skipped silently when offline)
+            if (navigator.onLine) {
+              var adScript = document.createElement('script');
+              adScript.async = true;
+              adScript.crossOrigin = 'anonymous';
+              adScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(ADMOB_CONFIG.appId);
+              adScript.onload = function () {
+                try {
+                  (window.adsbygoogle = window.adsbygoogle || []).push({});
+                } catch (e) {}
+              };
+              adScript.onerror = function () {};
+              document.head.appendChild(adScript);
+            }
+          } catch (err) {
+            // Fail silently so offline calculator is never disrupted
+          }
+        }
+
+        document.addEventListener('deviceready', initPlayStoreAdMob, false);
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          initPlayStoreAdMob();
+        } else {
+          window.addEventListener('DOMContentLoaded', initPlayStoreAdMob);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Desi AI Calculator",
+  "description": "Offline Hindi and English voice-enabled Desi calculator with GST, Discount, Age Calculator, Bigha to SqFt converter, Loan EMI, scientific functions, and persistent history.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
