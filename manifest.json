@@ -1,0 +1,12 @@
+{
+  "background_color": "#ffffff",
+  "description": "Offline Hindi and English voice-enabled Desi calculator with GST, Discount, Age Calculator, Bigha to SqFt converter, Loan EMI, scientific functions, and persistent history.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Desi AI Calculator Bharat",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Desi Calculator",
+  "start_url": "/",
+  "theme_color": "#ff6b00"
+}
