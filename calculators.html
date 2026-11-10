@@ -1,28 +1,24 @@
 <!DOCTYPE html>
-<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>All Calculators - Desi AI</title>
-<style>*{box-sizing:border-box}body{font-family:Arial;background:#f1f2f6;margin:0;padding:12px}.top{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-align:center;padding:20px;border-radius:18px}.top h1{margin:0;font-size:22px}.card{background:#fff;border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.06)}h2{margin:0 0 10px;font-size:18px}label{font-size:13px;color:#555}input{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;margin:5px 0 10px;font-size:15px}button{width:100%;padding:12px;background:#ff6a00;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px}.res{background:#e8ffe8;padding:12px;border-radius:10px;margin-top:10px;font-weight:bold;text-align:center}.back{display:block;background:#111;color:#fff;text-align:center;padding:13px;border-radius:14px;text-decoration:none;font-weight:bold}</style></head>
+<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Calculator</title>
+<style>*{box-sizing:border-box}body{font-family:Arial;background:#f1f2f6;margin:0;padding:12px}.card{background:#fff;border-radius:16px;padding:16px;margin:14px 0}input{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;margin:5px 0 10px}button{width:100%;padding:12px;background:#ff6a00;color:#fff;border:0;border-radius:10px;font-weight:bold}.res{background:#e8ffe8;padding:12px;border-radius:10px;margin-top:10px;font-weight:bold;text-align:center}.ads{background:#fff;border:2px dashed #ccc;border-radius:14px;padding:18px;text-align:center;color:#888}.back{display:block;background:#111;color:#fff;text-align:center;padding:13px;border-radius:14px;text-decoration:none;font-weight:bold}</style></head>
 <body>
-<div class="top"><h1>🧮 Desi AI Calculator</h1><p>India ka Apna Calculator - 100% Free, No Login</p></div>
+<a href="index.html">← Back</a>
+<div class="ads">📢 Yaha Ads Aayega</div>
 
-<div class="card"><h2>💰 SIP Calculator</h2><label>Monthly SIP ₹</label><input id="sipAmt" type="number" value="5000"><label>Return %</label><input id="sipRet" type="number" value="12"><label>Saal</label><input id="sipYr" type="number" value="10"><button onclick="calcSIP()">Calculate</button><div class="res" id="sipRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>🏦 FD Calculator</h2><label>Amount ₹</label><input id="fdAmt" type="number" value="100000"><label>Rate %</label><input id="fdRate" type="number" value="7"><label>Saal</label><input id="fdYr" type="number" value="5"><button onclick="calcFD()">Calculate</button><div class="res" id="fdRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>📈 RD Calculator</h2><label>Monthly ₹</label><input id="rdAmt" type="number" value="2000"><label>Rate %</label><input id="rdRate" type="number" value="6.5"><label>Saal</label><input id="rdYr" type="number" value="5"><button onclick="calcRD()">Calculate</button><div class="res" id="rdRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>🏠 Loan / EMI</h2><label>Loan ₹</label><input id="lnAmt" type="number" value="500000"><label>Rate %</label><input id="lnRate" type="number" value="9"><label>Mahine</label><input id="lnMon" type="number" value="60"><button onclick="calcLoan()">Calculate</button><div class="res" id="lnRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>🎂 Age Calculator</h2><label>Janam Tarikh</label><input id="dob" type="date"><button onclick="calcAge()">Calculate</button><div class="res" id="ageRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>% Percentage</h2><label>Kis ka %?</label><input id="pVal" type="number" value="500"><label>Kitna %?</label><input id="pPer" type="number" value="20"><button onclick="calcPer()">Calculate</button><div class="res" id="pRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>🧾 GST Calculator</h2><label>Price ₹ (GST ke bina)</label><input id="gstAmt" type="number" value="1000"><label>GST %</label><input id="gstPer" type="number" value="18"><button onclick="calcGST()">Calculate</button><div class="res" id="gstRes">Result yaha aayega</div></div>
-
-<div class="card"><h2>🏷️ Discount</h2><label>Original Price ₹</label><input id="dAmt" type="number" value="999"><label>Discount %</label><input id="dPer" type="number" value="50"><button onclick="calcDis()">Calculate</button><div class="res" id="dRes">Result yaha aayega</div></div>
-
-<a class="back" href="index.html">← Back to Home</a>
+<div class="card" id="sip"><h2>💰 SIP Calculator</h2><input id="sipAmt" type="number" value="5000" placeholder="Monthly SIP"><input id="sipRet" type="number" value="12" placeholder="Return %"><input id="sipYr" type="number" value="10" placeholder="Saal"><button onclick="calcSIP()">Calculate</button><div class="res" id="sipRes">Result yaha aayega</div></div>
+<div class="card" id="fd"><h2>🏦 FD Calculator</h2><input id="fdAmt" type="number" value="100000"><input id="fdRate" type="number" value="7"><input id="fdYr" type="number" value="5"><button onclick="calcFD()">Calculate</button><div class="res" id="fdRes">Result yaha aayega</div></div>
+<div class="card" id="rd"><h2>📈 RD Calculator</h2><input id="rdAmt" type="number" value="2000"><input id="rdRate" type="number" value="6.5"><input id="rdYr" type="number" value="5"><button onclick="calcRD()">Calculate</button><div class="res" id="rdRes">Result yaha aayega</div></div>
+<div class="card" id="loan"><h2>🏠 Loan / EMI</h2><input id="lnAmt" type="number" value="500000"><input id="lnRate" type="number" value="9"><input id="lnMon" type="number" value="60"><button onclick="calcLoan()">Calculate</button><div class="res" id="lnRes">Result yaha aayega</div></div>
+<div class="card" id="age"><h2>🎂 Age Calculator</h2><input id="dob" type="date"><button onclick="calcAge()">Calculate</button><div class="res" id="ageRes">Result yaha aayega</div></div>
+<div class="card" id="per"><h2>% Percentage</h2><input id="pVal" type="number" value="500"><input id="pPer" type="number" value="20"><button onclick="calcPer()">Calculate</button><div class="res" id="pRes">Result yaha aayega</div></div>
+<div class="card" id="gst"><h2>🧾 GST Calculator</h2><input id="gstAmt" type="number" value="1000"><input id="gstPer" type="number" value="18"><button onclick="calcGST()">Calculate</button><div class="res" id="gstRes">Result yaha aayega</div></div>
+<div class="card" id="dis"><h2>🏷️ Discount</h2><input id="dAmt" type="number" value="999"><input id="dPer" type="number" value="50"><button onclick="calcDis()">Calculate</button><div class="res" id="dRes">Result yaha aayega</div></div>
+<a class="back" href="index.html">← Sab Calculator Dekho</a>
 <script>
-function calcSIP(){let p=+sipAmt.value,r=+sipRet.value/100/12,n=+sipYr.value*12;let fv=p*((Math.pow(1+r,n)-1)/r)*(1+r);sipRes.innerText="Maturity: ₹"+Math.round(fv).toLocaleString('en-IN')+" | Invested: ₹"+(p*n).toLocaleString('en-IN')}
+// SIRF CLICK WALA KHULEGA
+let h = location.hash.replace('#','');
+if(h){ document.querySelectorAll('.card').forEach(c=>{ if(c.id!==h) c.style.display='none'; }); }
+function calcSIP(){let p=+sipAmt.value,r=+sipRet.value/100/12,n=+sipYr.value*12;let fv=p*((Math.pow(1+r,n)-1)/r)*(1+r);sipRes.innerText="Maturity: ₹"+Math.round(fv).toLocaleString('en-IN')}
 function calcFD(){let p=+fdAmt.value,r=+fdRate.value/100,n=+fdYr.value;let m=p*Math.pow(1+r,n);fdRes.innerText="Maturity: ₹"+Math.round(m).toLocaleString('en-IN')}
 function calcRD(){let p=+rdAmt.value,r=+rdRate.value/100/12,n=+rdYr.value*12;let fv=p*((Math.pow(1+r,n)-1)/r)*(1+r);rdRes.innerText="Maturity: ₹"+Math.round(fv).toLocaleString('en-IN')}
 function calcLoan(){let p=+lnAmt.value,r=+lnRate.value/100/12,n=+lnMon.value;let emi=p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);lnRes.innerText="EMI: ₹"+Math.round(emi).toLocaleString('en-IN')+" / mahina"}
