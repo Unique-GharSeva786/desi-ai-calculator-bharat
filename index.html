@@ -199,7 +199,14 @@
         </div>
       </div>
     </header>
-
+<style>
+@media (max-width:1024px){
+ #calculator > div{display:flex!important;flex-direction:column!important}
+ #calculator > div > section:first-child{display:contents!important}
+ #calculator > div > section:first-child > *:not(:first-child){order:3!important}
+ #calculator > div > section:last-child{order:2!important}
+}
+</style>
     <!-- Main Responsive Container -->
     <main id="calculator" class="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
