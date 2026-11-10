@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SIP Calculator - Desi AI Calculator</title>
+<style>body{font-family:Arial;background:#f5f5f5;padding:15px} .box{background:#fff;padding:20px;border-radius:15px;max-width:500px;margin:auto} input{width:100%} button{width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:17px}</style></head>
+<body><div class="box"><h2 style="text-align:center">💰 SIP Calculator</h2>
+<p>Monthly: <b id="a1">5000</b></p><input type="range" id="a" min="500" max="100000" step="500" value="5000" oninput="c()">
+<p>Return: <b id="b1">12%</b></p><input type="range" id="b" min="1" max="30" step="0.5" value="12" oninput="c()">
+<p>Time: <b id="c1">10 Saal</b></p><input type="range" id="c" min="1" max="30" value="10" oninput="c()">
+<div style="background:#e8f0fe;padding:12px;border-radius:10px;text-align:center;margin-top:12px"><p>Invested: <b id="inv"></b></p><p>Gain: <b id="gain"></b></p><h3>Total: <b id="tot"></b></h3></div>
+<button onclick="c()">Calculate Karo</button>
+<p style="text-align:center"><a href="index.html">⬅ Back to Home</a></p>
+</div><script>
+function c(){let P=+document.getElementById('a').value;let r=+document.getElementById('b').value/100/12;let n=+document.getElementById('c').value*12;document.getElementById('a1').innerText=P;document.getElementById('b1').innerText=document.getElementById('b').value+"%";document.getElementById('c1').innerText=document.getElementById('c').value+" Saal";let FV=P*((Math.pow(1+r,n)-1)/r)*(1+r);let inv=P*n;document.getElementById('inv').innerText="₹"+inv.toLocaleString('en-IN');document.getElementById('gain').innerText="₹"+Math.round(FV-inv).toLocaleString('en-IN');document.getElementById('tot').innerText="₹"+Math.round(FV).toLocaleString('en-IN');}c();
+</script></body></html>
