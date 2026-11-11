@@ -1,63 +1,34 @@
-<!DOCTYPE html> <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2144399963616374" crossorigin="anonymous"></script> <html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Desi Calculator - Sab Ek Jagah</title><style>*{box-sizing:border-box}body{font-family:'Segoe UI',Arial;background:#f6f8fb;margin:0}header{background:#0f2a5c;color:#fff;padding:18px;text-align:center;position:sticky;top:0;z-index:10}header h1{margin:0;font-size:22px}header p{margin:4px 0 0;font-size:13px;opacity:.9}.wrap{max-width:520px;margin:0 auto;padding:12px}.menu{background:#fff;border-radius:14px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;position:sticky;top:78px;z-index:9;box-shadow:0 2px 8px rgba(0,0,0,.08)}.menu a{background:#eef2ff;padding:8px 12px;border-radius:20px;text-decoration:none;color:#0f2a5c;font-weight:700;font-size:13px}.card{background:#fff;border-radius:18px;padding:20px;margin-top:16px;box-shadow:0 4px 16px rgba(0,0,0,.07)}.box{border-radius:14px;padding:14px;margin-top:14px}.box1{background:#eef6ff;border:2px solid #3b82f6}.box2{background:#fff4e6;border:2px solid #ff8a00}.box3{background:#e9fbe9;border:2px solid #22a355}.lab{font-size:17px;font-weight:900}.sub{font-size:13px;color:#555;margin-top:3px}.ex{font-size:12px;background:#fff;padding:5px 8px;border-radius:20px;display:inline-block;margin-top:6px}input{width:100%;padding:14px;margin-top:8px;border-radius:12px;border:2px solid #ddd;font-size:18px;font-weight:700}button{width:100%;padding:15px;background:#ff6a00;color:#fff;border:0;border-radius:12px;font-weight:900;margin-top:14px;font-size:17px}.res{background:#0f2a5c;color:#fff;padding:15px;border-radius:12px;margin-top:12px;font-weight:900;text-align:center;font-size:18px}.ads{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:14px;text-align:center;color:#999;font-size:12px;margin:14px 0}footer{background:#0f2a5c;color:#fff;text-align:center;padding:18px;font-size:13px;margin-top:16px}</style></head><body>
-<header><h1>🇮🇳 Desi Calculator</h1><p>Sab Calculator Ek Hi Jagah - Scroll Karo, Sab Mil Jayega!</p></header>
+<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Desi Calculator - SIP FD RD</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2144399963616374" crossorigin="anonymous"></script>
+<style>body{font-family:Arial;background:#f2f2f2;margin:0}header{background:#0b5e2e;color:#fff;text-align:center;padding:15px}.wrap{max-width:600px;margin:auto;padding:10px}.menu{text-align:center;background:#fff;padding:10px;border-radius:10px}.menu a{margin:0 10px;text-decoration:none;font-weight:bold;color:#0b5e2e}.ads{background:#fff;text-align:center;padding:10px;margin:10px 0;border:1px dashed #999}.card{background:#fff;padding:15px;border-radius:10px;margin:10px 0}.box{margin:10px 0}.box label{font-weight:bold}input{width:100%;padding:10px;margin-top:5px;border:1px solid #ccc;border-radius:5px}button{background:#ff7a00;color:#fff;border:0;padding:12px;width:100%;border-radius:8px;font-size:16px;font-weight:bold}h2{margin:0 0 10px}</style>
+</head><body>
+<header><h1>🇮🇳 Desi Calculator</h1><p>Sab Calculator Ek Jagah</p></header>
 <div class="wrap">
-<div class="menu"><a href="#sip">💰 SIP</a><a href="#fd">🏦 FD</a><a href="#rd">📈 RD</a><a href="#loan">🏠 Loan</a><a href="#gst">🧾 GST</a><a href="#discount">🏷️ Discount</a><a href="#per">% Per</a><a href="#age">🎂 Age</a></div>
+<div class="menu"><a href="#sip">💰 SIP</a><a href="#fd">🏦 FD</a><a href="#rd">📈 RD</a></div>
 <div class="ads">ADVERTISEMENT</div>
 
 <div class="card" id="sip"><h2>💰 SIP Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - HAR MAHINE KITNA?</div><div class="sub">Har mahine kitna jama karoge?</div><div class="ex">👉 Jaise: 5000</div><input id="s1" type="number" value="5000"></div>
-<div class="box box2"><div class="lab">BOX 2 - RETURN KITNA %?</div><div class="sub">Saal ka return kitna %?</div><div class="ex">👉 Jaise: 12</div><input id="s2" type="number" value="12"></div>
-<div class="box box3"><div class="lab">BOX 3 - KITNE SAAL?</div><div class="sub">Kitne saal tak?</div><div class="ex">👉 Jaise: 10</div><input id="s3" type="number" value="10"></div>
-<button onclick="csip()">👉 SIP NIKALO</button><div class="res" id="sr">Result Yaha Aayega</div></div>
+<div class="box"><label>BOX 1 - Monthly Paisa</label><input id="s1" type="number" placeholder="Ex: 2000"></div>
+<div class="box"><label>BOX 2 - Return %</label><input id="s2" type="number" placeholder="Ex: 12"></div>
+<div class="box"><label>BOX 3 - Kitne Saal</label><input id="s3" type="number" placeholder="Ex: 10"></div>
+<button onclick="csip()">👉 SIP NIKALO</button><p id="sr"></p></div>
 
 <div class="card" id="fd"><h2>🏦 FD Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - KITNA JAMA KAROGE?</div><div class="sub">Ek baar me kitna daloge?</div><div class="ex">👉 Jaise: 100000</div><input id="f1" type="number" value="100000"></div>
-<div class="box box2"><div class="lab">BOX 2 - BYAJ KITNA %?</div><div class="sub">Bank kitna % de raha hai?</div><div class="ex">👉 Jaise: 7</div><input id="f2" type="number" value="7"></div>
-<div class="box box3"><div class="lab">BOX 3 - KITNE SAAL?</div><div class="sub">Kitne saal ke liye?</div><div class="ex">👉 Jaise: 5</div><input id="f3" type="number" value="5"></div>
-<button onclick="cfd()">👉 FD NIKALO</button><div class="res" id="fr">Result Yaha Aayega</div></div>
+<div class="box"><label>BOX 1 - Kitna Paisa</label><input id="f1" type="number" placeholder="Ex: 100000"></div>
+<div class="box"><label>BOX 2 - Interest %</label><input id="f2" type="number" placeholder="Ex: 7"></div>
+<div class="box"><label>BOX 3 - Kitne Saal</label><input id="f3" type="number" placeholder="Ex: 5"></div>
+<button onclick="cfd()">👉 FD NIKALO</button><p id="fr"></p></div>
 
 <div class="card" id="rd"><h2>📈 RD Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - HAR MAHINE KITNA?</div><div class="sub">Har mahine kitna daloge?</div><div class="ex">👉 Jaise: 2000</div><input id="r1" type="number" value="2000"></div>
-<div class="box box2"><div class="lab">BOX 2 - BYAJ KITNA %?</div><div class="sub">Bank kitna % dega?</div><div class="ex">👉 Jaise: 6.5</div><input id="r2" type="number" value="6.5"></div>
-<div class="box box3"><div class="lab">BOX 3 - KITNE MAHINE?</div><div class="sub">Kitne mahine tak?</div><div class="ex">👉 Jaise: 24</div><input id="r3" type="number" value="24"></div>
-<button onclick="crd()">👉 RD NIKALO</button><div class="res" id="rr">Result Yaha Aayega</div></div>
+<div class="box"><label>BOX 1 - Monthly Paisa</label><input id="r1" type="number" placeholder="Ex: 5000"></div>
+<div class="box"><label>BOX 2 - Interest %</label><input id="r2" type="number" placeholder="Ex: 6.5"></div>
+<div class="box"><label>BOX 3 - Kitne Saal</label><input id="r3" type="number" placeholder="Ex: 3"></div>
+<button onclick="crd()">👉 RD NIKALO</button><p id="rr"></p></div>
 
-<div class="ads">ADVERTISEMENT</div>
-
-<div class="card" id="loan"><h2>🏠 Loan EMI Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - KITNA PAISA LIYA?</div><div class="sub">Bank se kitna liya?</div><div class="ex">👉 Jaise: 500000</div><input id="l1" type="number" value="500000"></div>
-<div class="box box2"><div class="lab">BOX 2 - BYAJ KITNA %?</div><div class="sub">Bank kitna % lega?</div><div class="ex">👉 Jaise: 9</div><input id="l2" type="number" value="9"></div>
-<div class="box box3"><div class="lab">BOX 3 - KITNE MAHINE?</div><div class="sub">Kitne mahine me wapas?</div><div class="ex">👉 Jaise: 60</div><input id="l3" type="number" value="60"></div>
-<button onclick="cloan()">👉 EMI NIKALO</button><div class="res" id="lr">Result Yaha Aayega</div></div>
-
-<div class="card" id="gst"><h2>🧾 GST Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - SAMAN KA DAAM?</div><div class="sub">Bina GST ke kitne ka hai?</div><div class="ex">👉 Jaise: 1000</div><input id="g1" type="number" value="1000"></div>
-<div class="box box2"><div class="lab">BOX 2 - GST KITNA %?</div><div class="sub">5, 12, 18 ya 28?</div><div class="ex">👉 Jaise: 18</div><input id="g2" type="number" value="18"></div>
-<button onclick="cgst()">👉 GST NIKALO</button><div class="res" id="gr">Result Yaha Aayega</div></div>
-
-<div class="card" id="discount"><h2>🏷️ Discount Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - ASLI DAAM KYA HAI?</div><div class="sub">Tag pe kitna likha hai?</div><div class="ex">👉 Jaise: 2000</div><input id="d1" type="number" value="2000"></div>
-<div class="box box2"><div class="lab">BOX 2 - CHHOOT KITNI %?</div><div class="sub">Kitne % chhoot mil rahi hai?</div><div class="ex">👉 Jaise: 30</div><input id="d2" type="number" value="30"></div>
-<button onclick="cdis()">👉 DAAM NIKALO</button><div class="res" id="dr">Result Yaha Aayega</div></div>
-
-<div class="card" id="per"><h2>% Percentage Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - PURA NUMBER KYA HAI?</div><div class="sub">Jiska % nikalna hai</div><div class="ex">👉 Jaise: 500</div><input id="p1" type="number" value="500"></div>
-<div class="box box2"><div class="lab">BOX 2 - KITNA %?</div><div class="sub">Kitne % nikalne hai?</div><div class="ex">👉 Jaise: 20</div><input id="p2" type="number" value="20"></div>
-<button onclick="cper()">👉 % NIKALO</button><div class="res" id="pr">Result Yaha Aayega</div></div>
-
-<div class="card" id="age"><h2>🎂 Age Calculator</h2>
-<div class="box box1"><div class="lab">BOX 1 - JANAM TAREEKH KYA HAI?</div><div class="sub">Apni Date of Birth chuno</div><div class="ex">👉 Jaise: 15-08-2000</div><input id="a1" type="date" value="2000-01-01"></div>
-<button onclick="cage()">👉 UMAR NIKALO</button><div class="res" id="ar">Result Yaha Aayega</div></div>
-
-<div class="ads">ADVERTISEMENT</div>
-</div><footer>© 2026 Desi Calculator • Made in Bharat 🇮🇳</footer>
+</div>
 <script>
-function csip(){let m=+s1.value,r=+s2.value/100/12,n=+s3.value*12;let fv=m*((Math.pow(1+r,n)-1)/r)*(1+r);sr.innerText="Total: ₹"+Math.round(fv).toLocaleString('en-IN')+" | Fayda: ₹"+Math.round(fv-m*n).toLocaleString('en-IN')}
-function cfd(){let p=+f1.value,r=+f2.value/100,y=+f3.value;let m=p*Math.pow(1+r/4,4*y);fr.innerText="Milega: ₹"+Math.round(m).toLocaleString('en-IN')+" | Byaj: ₹"+Math.round(m-p).toLocaleString('en-IN')}
-function crd(){let m=+r1.value,r=+r2.value/100/12,n=+r3.value;let fv=m*((Math.pow(1+r,n)-1)/r)*(1+r);rr.innerText="Milega: ₹"+Math.round(fv).toLocaleString('en-IN')}
-function cloan(){let p=+l1.value,rt=+l2.value/100/12,n=+l3.value;let emi=p*rt*Math.pow(1+rt,n)/(Math.pow(1+rt,n)-1);lr.innerText="EMI: ₹"+Math.round(emi).toLocaleString('en-IN')+" / Mahina"}
-function cgst(){let p=+g1.value,g=+g2.value;let gst=p*g/100;gr.innerText="GST: ₹"+gst.toLocaleString('en-IN')+" | Total: ₹"+(p+gst).toLocaleString('en-IN')}
-function cdis(){let p=+d1.value,d=+d2.value;let s=p*d/100;dr.innerText="Dena Hai: ₹"+(p-s).toLocaleString('en-IN')+" | Bacha: ₹"+s.toLocaleString('en-IN')}
-function cper(){let p=+p1.value,q=+p2.value;pr.innerText=p+" ka "+q+"% = "+(p*q/100).toLocaleString('en-IN')}
-function cage(){let b=new Date(a1.value),n=new Date();let y=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth(),d=n.getDate()-b.getDate();if(d<0){m--;d+=30}if(m<0){y--;m+=12}ar.innerText="Umar: "+y+" Saal, "+m+" Mahina, "+d+" Din"}
-</script></body></html>
+function csip(){let m=+document.getElementById('s1').value,r=+document.getElementById('s2').value/100/12,n=+document.getElementById('s3').value*12;let f=m*((Math.pow(1+r,n)-1)/r)*(1+r);document.getElementById('sr').innerHTML="Total: ₹"+Math.round(f).toLocaleString('en-IN')}
+function cfd(){let p=+document.getElementById('f1').value,r=+document.getElementById('f2').value/100,t=+document.getElementById('f3').value;let f=p*Math.pow(1+r,t);document.getElementById('fr').innerHTML="Total: ₹"+Math.round(f).toLocaleString('en-IN')}
+function crd(){let m=+document.getElementById('r1').value,r=+document.getElementById('r2').value/100/12,n=+document.getElementById('r3').value*12;let f=m*((Math.pow(1+r,n)-1)/r)*(1+r);document.getElementById('rr').innerHTML="Total: ₹"+Math.round(f).toLocaleString('en-IN')}
+</script>
+</body></html>
